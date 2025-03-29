@@ -1,0 +1,67 @@
+<!DOCTYPE html>  
+<html lang="zh-CN">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <script include="openlayers" src="../../../mapgis/include-openlayers-local.js"></script>
+    <script src="../../../layui.js"></script>
+    <title>宿舍信息管理</title>  
+    <style>  
+        .layui-form-label {  
+            color: white; 
+        }  
+    </style>  
+</head>  
+<body>  
+<form class="layui-form" action="submit_url_here.php" method="post"> <!-- 这里填写表单提交的URL -->  
+    <div class="layui-form-item">  
+        <label class="layui-form-label">修改列名</label>  
+        <div class="layui-input-block">  
+            <input type="text" name="name" required lay-verify="required" placeholder="请输入要修改的列名" autocomplete="off" class="layui-input">  
+        </div>  
+    </div>  
+    <div class="layui-form-item">  
+        <label class="layui-form-label">值</label>  
+        <div class="layui-input-block">  
+            <input type="text" name="new" required lay-verify="required" placeholder="请输入修改的值" autocomplete="off" class="layui-input">  
+        </div>  
+    </div>  
+    <div class="layui-form-item">  
+        <div class="layui-input-block">  
+            <button class="layui-btn" lay-submit lay-filter="formDemo" onclick = confirm()>立即提交</button>  
+            <button type="reset" class="layui-btn layui-btn-primary" onclick = back()>返回</button>  
+        </div>  
+    </div>  
+</form>  
+  
+<!-- 假设您还需要引入layui的JavaScript文件来启用表单验证等功能 -->  
+<script src="path/to/layui/layui.js"></script>  
+<script>  
+function test()
+{
+    console.log("xixi");
+}
+function confirm()
+{
+    this.test()
+}
+function back()
+{
+    console.log("hh");
+    window.parent.appk.openPopup('widgets/two-dimension/chaxun/chaxun.html');
+}
+
+layui.use('form', function(){  
+  var form = layui.form;  
+  
+  //监听提交  
+  form.on('submit(formDemo)', function(data){  
+    // 阻止表单跳转。如果需要表单跳转，去掉这段即可。  
+    return false;  
+    // 这里可以编写表单提交后的逻辑，比如发送Ajax请求等  
+  });  
+});  
+</script>  
+  
+</body>  
+</html>

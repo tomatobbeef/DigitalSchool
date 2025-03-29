@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script include="openlayers" src="../../../mapgis/include-openlayers-local.js"></script>
+    <script src="../../../layui.js"></script>
+    <link rel="stylesheet" href="../../../new.css">
+    <title>Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin: 5px;
+        }
+        .row {
+            margin-bottom: 10px;
+        }
+        .search-btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .select-box {
+            margin-bottom: 10px;
+        }
+        .results-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 0px solid #ccc;
+            padding: 10px;
+            /* display: none; 初始不显示 */
+        }
+        .result-button {
+            display: block;
+            width: 100%; /* 宽度为一行 */
+            text-align: center; /* 文字居中 */
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row select-box">
+            <select id="options_f">
+                <option value="none">无</option>
+                <option value="1">宿舍</option>
+                <option value="2">教学楼</option>
+                <option value="3">学院楼</option>
+                <option value="4">食堂</option>
+            </select>   
+            <button onclick="choose()">选择</button>
+        </div>
+        <div class="row select-box">
+            <select id="options">
+                <option value="none">无</option>
+            </select>
+            <button onclick="search()">搜索</button>
+        </div>
+        <div class="row">
+            <button onclick="selectBoxSearch()">框选搜索</button>
+            <button onclick="deleteData()">删除</button>
+            <button onclick="changeData()">修改</button>
+            <button onclick="showData()">信息展示</button>
+        </div>
+        <div class="row results-container" id="results-container">
+            <!-- 框选搜索结果按钮将显示在这里 -->
+        </div>
+        <div id="lineChart" style="width:fit-content;height:fit-content;"></div> 
+    </div>
+
+    <script>
+         let idNameMap = {}; // 用于存储 id 和对应的 name
+
+         window.onload = function() {
+            // // 从数据库提取每一行的 name，并建立 name 与 id 的对应关系
+            // if (window.parent && window.parent.db) {
+            //     const rows = window.parent.db.exec(`SELECT id, name FROM dormitories`);
+            //     if (rows && rows.length > 0) {
+            //         rows[0].values.forEach(row => {
+            //             const id = row[0];
+            //             const name = row[1];
+            //             idNameMap[id] = name;
+            //         });
+            //         // 将 name 添加到下拉框中
+            //         const selectBox = document.getElementById('options');
+            //         Object.entries(idNameMap).forEach(([id, name]) => {
+            //             const option = document.createElement('option');
+            //             option.text = name;
+            //             option.value = id; // 将 value 设置为 ID
+            //             selectBox.add(option);
+            //         });
+            //     }
+            // }
+        };
+
+        function choose() {
+            window.parent.console.log("choose");
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId = selectBox1.value;
+            window.parent.console.log(selectedId);
+
+            if(selectedId=="1")
+            {
+                idNameMap = {};
+                window.parent.console.log("sel=1");
+                if (window.parent && window.parent.db) {
+                const rows = window.parent.db.exec(`SELECT id, name FROM dormitories`);
+                if (rows && rows.length > 0) {
+                    rows[0].values.forEach(row => {
+                        const id = row[0];
+                        const name = row[1];
+                        idNameMap[id] = name;
+                    });
+                    // 将 name 添加到下拉框中
+                    const selectBox = document.getElementById('options');
+                    selectBox.innerHTML = '';
+
+                    Object.entries(idNameMap).forEach(([id, name]) => {
+                        const option = document.createElement('option');
+                        option.text = name;
+                        option.value = id; // 将 value 设置为 ID
+                        selectBox.add(option);
+                    });
+                }
+                }
+            }
+            else if(selectedId=="2")//教学楼
+            {   
+                idNameMap = {};
+                if (window.parent && window.parent.db) {
+                const rows = window.parent.db.exec(`SELECT id, name FROM classrooms`);
+                if (rows && rows.length > 0) {
+                    rows[0].values.forEach(row => {
+                        const id = row[0];
+                        const name = row[1];
+                        idNameMap[id] = name;
+                    });
+                    // 将 name 添加到下拉框中
+                    const selectBox = document.getElementById('options');
+                    selectBox.innerHTML = '';
+                    Object.entries(idNameMap).forEach(([id, name]) => {
+                        const option = document.createElement('option');
+                        option.text = name;
+                        option.value = id; // 将 value 设置为 ID
+                        selectBox.add(option);
+                    });
+                }
+                }
+            }
+            else if(selectedId=="3"){//学院楼
+                if (window.parent && window.parent.db) {
+                    idNameMap = {};
+                const rows = window.parent.db.exec(`SELECT id, name FROM offices`);
+                if (rows && rows.length > 0) {
+                    rows[0].values.forEach(row => {
+                        const id = row[0];
+                        const name = row[1];
+                        idNameMap[id] = name;
+                    });
+                    // 将 name 添加到下拉框中
+                    const selectBox = document.getElementById('options');
+                    selectBox.innerHTML = '';
+                    Object.entries(idNameMap).forEach(([id, name]) => {
+                        const option = document.createElement('option');
+                        option.text = name;
+                        option.value = id; // 将 value 设置为 ID
+                        selectBox.add(option);
+                    });
+                }
+                }
+            }
+            else if(selectedId=="4"){//食堂
+                if (window.parent && window.parent.db) {
+                    idNameMap = {};
+                const rows = window.parent.db.exec(`SELECT id, name FROM cantings`);
+                if (rows && rows.length > 0) {
+                    rows[0].values.forEach(row => {
+                        const id = row[0];
+                        const name = row[1];
+                        idNameMap[id] = name;
+                    });
+                    // 将 name 添加到下拉框中
+                    const selectBox = document.getElementById('options');
+                    selectBox.innerHTML = '';
+                    Object.entries(idNameMap).forEach(([id, name]) => {
+                        const option = document.createElement('option');
+                        option.text = name;
+                        option.value = id; // 将 value 设置为 ID
+                        selectBox.add(option);
+                    });
+                }
+                }
+            }
+        }
+        function higlight_zero()
+        {
+            window.parent.db.exec(`UPDATE dormitories SET highlight = 0`);
+            window.parent.db.exec(`UPDATE offices SET highlight = 0`);
+            window.parent.db.exec(`UPDATE cantings SET highlight = 0`);
+            window.parent.db.exec(`UPDATE classrooms SET highlight = 0`);
+        }
+        function search() {
+            // 获取下拉框选择的值（ID）
+            window.parent.console.log("ffffff");
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId1 = selectBox1.value;
+            const selectBox = document.getElementById('options');
+            const selectedId = selectBox.value;
+            window.parent.console.log(selectedId1);
+            if(selectedId1=="1"){
+                if (selectedId !== 'none') {
+                // 将数据库中所有行的 highlight 列置为 0
+                this.higlight_zero();
+                
+                // 将选中行的 highlight 列置为 1
+                window.parent.db.exec(`UPDATE dormitories SET highlight = 1 WHERE id = ${selectedId}`);
+                
+                // 刷新地图，重新加载要素
+                window.parent.appk.erdrefresh();
+
+                // 计算多边形中心点并移动地图视角
+                const center = calculatePolygonCenter(selectedId);
+                if (center) {
+                    // 调用函数移动地图视角
+                    moveToCenter(center);
+                }
+                console.log("搜索按钮被点击，选中的 ID：", selectedId);
+            }
+            }
+            else if(selectedId1=="2"){
+                if (selectedId !== 'none') {
+                // 将数据库中所有行的 highlight 列置为 0
+                this.higlight_zero();
+                
+                // 将选中行的 highlight 列置为 1
+                window.parent.db.exec(`UPDATE classrooms SET highlight = 1 WHERE id = ${selectedId}`);
+                
+                // 刷新地图，重新加载要素
+                window.parent.appk.erdrefresh();
+
+                // 计算多边形中心点并移动地图视角
+                const center = calculatePolygonCenter(selectedId);
+                if (center) {
+                    // 调用函数移动地图视角
+                    moveToCenter(center);
+                }
+                console.log("搜索按钮被点击，选中的 ID：", selectedId);
+            }
+            }
+            else if(selectedId1=="3"){
+                if (selectedId !== 'none') {
+                // 将数据库中所有行的 highlight 列置为 0
+                this.higlight_zero();
+                
+                // 将选中行的 highlight 列置为 1
+                window.parent.db.exec(`UPDATE offices SET highlight = 1 WHERE id = ${selectedId}`);
+                
+                // 刷新地图，重新加载要素
+                window.parent.appk.erdrefresh();
+
+                // 计算多边形中心点并移动地图视角
+                const center = calculatePolygonCenter(selectedId);
+                if (center) {
+                    // 调用函数移动地图视角
+                    moveToCenter(center);
+                }
+                console.log("搜索按钮被点击，选中的 ID：", selectedId);
+            }
+            }
+            else if(selectedId1=="4"){
+                if (selectedId !== 'none') {
+                // 将数据库中所有行的 highlight 列置为 0
+                this.higlight_zero();
+                
+                // 将选中行的 highlight 列置为 1
+                window.parent.db.exec(`UPDATE cantings SET highlight = 1 WHERE id = ${selectedId}`);
+                
+                // 刷新地图，重新加载要素
+                window.parent.appk.erdrefresh();
+
+                // 计算多边形中心点并移动地图视角
+                const center = calculatePolygonCenter(selectedId);
+                if (center) {
+                    // 调用函数移动地图视角
+                    moveToCenter(center);
+                }
+                console.log("搜索按钮被点击，选中的 ID：", selectedId);
+            }
+            }
+            
+        }
+
+        // 计算多边形中心点坐标
+        function calculatePolygonCenter(id) {
+            // 从数据库中获取多边形的坐标字符串
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId1 = selectBox1.value;
+            var row;
+            if(selectedId1=="1"){
+                row = window.parent.db.exec(`SELECT geom FROM dormitories WHERE id = ${id}`);
+            }
+            else if(selectedId1=="2"){
+                row = window.parent.db.exec(`SELECT geom FROM classrooms WHERE id = ${id}`);
+            }
+            else if(selectedId1=="3"){
+                row = window.parent.db.exec(`SELECT geom FROM offices WHERE id = ${id}`);
+            }
+            else if(selectedId1=="4"){
+                row = window.parent.db.exec(`SELECT geom FROM cantings WHERE id = ${id}`);
+            }
+            
+            if (row && row.length > 0 && row[0].values.length > 0) {
+                const coordinatesString = row[0].values[0][0];
+                const coordinates = JSON.parse(coordinatesString);
+                let sumX = 0;
+                let sumY = 0;
+                let totalPoints = 0;
+                coordinates.forEach(polygon => {
+                    polygon.forEach(point => {
+                        sumX += point[0];
+                        sumY += point[1];
+                        totalPoints++;
+                    });
+                });
+                const centerX = sumX / totalPoints;
+                const centerY = sumY / totalPoints;
+                return [centerX, centerY];
+            } else {
+                console.error("No data found for ID", id);
+                return null;
+            }
+        }
+
+        // 移动地图视角到指定坐标点
+        function moveToCenter(center) {
+            // console.log('center:',center);
+            center = ol.proj.transform(center, "EPSG:4326", "EPSG:3857");
+            // 缩放级别
+            const zoomLevel = 17;
+            // 创建一个地图视图对象
+            const view = new ol.View({
+                center: center,
+                zoom: zoomLevel
+            });
+            // 将地图视图设置为新的视图
+            window.parent.appk.openlayersMap.setView(view);
+        }
+        function selectBoxSearch() {
+            this.higlight_zero();
+            window.parent.appk.erdrefresh();
+            // 清空结果容器中的按钮
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+
+            // 设置状态，等待用户进行框选
+            window.parent.txdjs=0;
+            window.isSelectBoxSearching = true;
+            window.isFirstClick = true;
+
+            // 在子窗口中引入layui模块
+            const layui = window.parent.layui;
+
+            // 弹出提示框，引导用户进行框选
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.msg('请在地图上进行框选操作', {
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                });
+            });
+
+            // 临时添加鼠标点击事件监听器1
+            const map = window.parent.appk.openlayersMap;
+            map.once('click', handleFirstClick);
+        }
+
+        function handleFirstClick(event) {
+            idNameMap = {}
+            const startCoordinate = event.coordinate;
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId1 = selectBox1.value;
+            // 创建一个空的矩形要素
+            const rectFeature = new ol.Feature(new ol.geom.Polygon([]));
+            window.parent.appk.showvectorSource.addFeature(rectFeature);
+
+            // 监听鼠标移动事件，并根据当前鼠标位置动态绘制矩形
+            const listener = window.parent.appk.openlayersMap.on('pointermove', function(event) {
+                const endCoordinate = event.coordinate;
+                const extent = [startCoordinate[0], startCoordinate[1], endCoordinate[0], endCoordinate[1]];
+
+                // 更新矩形的几何形状
+                const geometry = ol.geom.Polygon.fromExtent(extent);
+                rectFeature.setGeometry(geometry);
+            });
+
+            // 监听第二次鼠标点击事件，完成框选操作
+            window.parent.appk.openlayersMap.once('click', function(event) {
+                const endCoordinate = event.coordinate;
+
+                // 移除鼠标移动事件监听器
+                ol.Observable.unByKey(listener);
+
+                // 移除绘制的矩形
+                window.parent.appk.showvectorSource.removeFeature(rectFeature);
+
+                // 打印初始坐标和结束坐标
+                console.log("初始坐标: ", startCoordinate);
+                console.log("结束坐标: ", endCoordinate);
+                var rows;
+                if(selectedId1=="1"){
+                    rows = window.parent.db.exec(`SELECT id, geom,name FROM dormitories`);
+                }
+                else if(selectedId1=="2"){
+                    rows = window.parent.db.exec(`SELECT id, geom,name FROM classrooms`);
+                }
+                else if(selectedId1=="3"){
+                    rows = window.parent.db.exec(`SELECT id, geom,name FROM offices`);
+                }
+                else if(selectedId1=="4"){
+                    rows = window.parent.db.exec(`SELECT id, geom,name FROM cantings`);
+                }
+                
+                // 矩形的四个边界
+                const rect = [
+                    Math.min(startCoordinate[0], endCoordinate[0]), // minX
+                    Math.min(startCoordinate[1], endCoordinate[1]), // minY
+                    Math.max(startCoordinate[0], endCoordinate[0]), // maxX
+                    Math.max(startCoordinate[1], endCoordinate[1])  // maxY
+                ];
+
+                // 遍历每一行数据
+                rows[0].values.forEach(row => {
+                    const id = row[0];
+                    const geom = JSON.parse(row[1]);
+                    const name = row[2];
+                    idNameMap[id] = name;
+                    let allPointsInRect = true;
+
+                    // 遍历多边形的每个顶点坐标
+                    for (let i = 0; i < geom[0].length; i++) {
+                        if (!isPointInRect(geom[0][i], rect)) {
+                            allPointsInRect = false;
+                            break;
+                        }
+                    }
+
+                    // 根据判断结果更新 highlight 列
+                    if (allPointsInRect) {
+                        // 更新数据库中的 highlight 列为 1
+                        if(selectedId1=="1"){
+                                    row = window.parent.db.exec(`UPDATE dormitories SET highlight = 1 WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="2"){
+                                    row = window.parent.db.exec(`UPDATE classrooms SET highlight = 1 WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="3"){
+                                    row = window.parent.db.exec(`UPDATE offices SET highlight = 1 WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="4"){
+                                    row = window.parent.db.exec(`UPDATE cantings SET highlight = 1 WHERE id = ${id}`);
+                                }
+
+                        // 获取多边形的名称
+                        const name = idNameMap[id]; // 假设 idNameMap 是之前定义的包含 id 和对应名称的映射
+                        console.log("id:",id,", name:",name)
+                        // 创建按钮
+                        const button = document.createElement('button');
+                        button.classList.add('result-button');
+                        button.textContent = name; // 按钮文本为多边形名称
+                        button.value = id
+
+                        // 按钮点击事件
+                        button.addEventListener('click', function() {
+                            selectedId=button.value
+                            if(selectedId1=="1"){
+                                    row = window.parent.db.exec(`SELECT * FROM dormitories WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="2"){
+                                    row = window.parent.db.exec(`SELECT * FROM classrooms WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="3"){
+                                    row = window.parent.db.exec(`SELECT * FROM offices WHERE id = ${id}`);
+                                }
+                                else if(selectedId1=="4"){
+                                    row = window.parent.db.exec(`SELECT * FROM cantings WHERE id = ${id}`);
+                                }
+                            console.log("Data for ID", id, ":", row[0].values);
+                            console.log(selectedId)
+                            if (selectedId !== 'none') {
+                                // 将数据库中所有行的 highlight 列置为 0
+                                higlight_zero();
+                                
+                                // 刷新地图，重新加载要素
+                                window.parent.appk.erdrefresh();
+                                // 计算多边形中心点并移动地图视角
+                                const center = calculatePolygonCenter(id);
+                                if (center) {
+                                    // 调用函数移动地图视角
+                                    moveToCenter(center);
+                                }
+                                console.log("按钮被点击，选中的 ID：", id);
+                            }
+                        });
+
+                        // 将按钮添加到结果容器中
+                        const resultsContainer = document.getElementById('results-container');
+                        resultsContainer.appendChild(button);
+                    } else {
+                    }
+
+                    window.parent.appk.erdrefresh();
+                });
+
+                // 重置状态
+                window.isSelectBoxSearching = false;
+            });
+        }
+
+                
+        // 定义辅助函数来判断点是否在矩形范围内
+        function isPointInRect(point, rect) {
+            // 将点坐标从 EPSG:4326 转为 EPSG:3857
+            const transformedPoint = ol.proj.transform(point, 'EPSG:4326', 'EPSG:3857');
+            console.log("transformed point:", transformedPoint, ", rect:", rect);
+
+            const [x, y] = transformedPoint;
+            const [minX, minY, maxX, maxY] = rect;
+            console.log("return:", (x >= minX && x <= maxX) && (y >= minY && y <= maxY));
+            return (x >= minX && x <= maxX) && (y >= minY && y <= maxY);
+        }
+        function deleteData(){
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId1 = selectBox1.value;
+            const selectBox = document.getElementById('options');
+            const selectedId = selectBox.value;
+            var row;
+
+            var confirmation = confirm("确定要删除吗？");
+            if(confirmation)
+            {
+                if(selectedId1=="1"){
+                window.parent.db.exec(`DELETE FROM dormitories WHERE id = ${selectedId}`);
+                window.parent.appk.erdrefresh();
+            }
+            else if(selectedId1=="2"){
+                window.parent.db.exec(`DELETE FROM classrooms WHERE id = ${selectedId}`);
+                window.parent.appk.erdrefresh();
+            }
+            else if(selectedId1=="3"){
+                window.parent.db.exec(`DELETE FROM offices WHERE id = ${selectedId}`);
+                window.parent.appk.erdrefresh();
+            }
+            else if(selectedId1=="4"){
+                window.parent.db.exec(`DELETE FROM cantings WHERE id = ${selectedId}`);
+                window.parent.appk.erdrefresh();
+            }
+            }
+        }
+        function hh_test()
+        {
+            return 0;
+        }
+        function showData(){
+            
+            window.parent.appk.showData();
+        }
+
+        
+        function changeData(){
+            const selectBox1 = document.getElementById('options_f');
+            const selectedId1 = selectBox1.value;
+            const selectBox = document.getElementById('options');
+            const selectedId = selectBox.value;
+
+            window.parent.console.log(selectedId1);
+            window.parent.console.log("执行changeData函数啦！");
+            window.parent.layer.open({
+                title: "信息修改",
+                content:`<form class="layui-form" action="">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-block">
+                        <input type="text" name="name" required  lay-verify="required" placeholder="请输入要修改的列名" autocomplete="off" class="layui-input">
+                        </div>
+                        </div>
+                        <div class="layui-form-item">
+                        <label class="layui-form-label">宿舍数量</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="value" required  lay-verify="required" placeholder="请输入修改后的值" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    </form>`,
+                    yes: function (index, layero) {
+                    
+                    // 获取表单数据
+                    var formData = layero.find("form").serializeArray();
+                    
+                    // 构造数据库记录
+                    var record = {
+                        name: formData[0].value,
+                        value: formData[1].value,
+                    };
+
+                    
+                    if(selectedId1=="1"){
+                        window.parent.db.exec(`UPDATE dormitories SET ${record.name} = ${record.value}  WHERE id = ${selectedId}`);
+                    }
+                    else if(selectedId1=="2"){
+                        window.parent.db.exec(`UPDATE classrooms SET ${record.name} = ${record.value}  WHERE id = ${selectedId}`);
+
+                    }
+                    else if(selectedId1=="3"){
+                        window.parent.db.exec(`UPDATE offices SET ${record.name} = ${record.value}  WHERE id = ${selectedId}`);
+                        window.parent.appk.erdrefresh();
+                    }
+                    else if(selectedId1=="4"){
+                        window.parent.db.exec(`UPDATE cantings SET ${record.name} = ${record.value}  WHERE id = ${selectedId}`);
+                    }
+                    window.parent.layer.close(index);
+                }
+            });
+        
+    }
+    
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Place</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid black;
+        }
+        #form {
+            margin-top: 10px;
+        }
+    </style>
+    <script src="../../../mapgis/cdn/cesium/Cesium.js"></script>
+</head>
+<body>
+    <div id="form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br><br>
+        
+        <label for="node">Node:</label>
+        <input type="checkbox" id="node" name="node"><br><br>
+        
+        <label for="hide">Hide:</label>
+        <input type="checkbox" id="hide" name="hide"><br><br>
+        
+        <button id="confirmBtn">Confirm</button>
+    </div>
+
+    
+
+    <script>
+        var viewer = window.parent.vi;
+
+        var pointEntity = viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(-75.59777, 40.03883), // 初始位置
+            point: {
+                pixelSize: 10,
+                color: Cesium.Color.RED
+            }
+        });
+
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+
+        viewer.screenSpaceEventHandler.setInputAction(function(click) {
+            var pickedPosition = viewer.scene.pickPosition(click.position);
+            if (Cesium.defined(pickedPosition)) {
+                pointEntity.position.setValue(pickedPosition);
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+            var name = document.getElementById('name').value;
+            var node = document.getElementById('node').checked;
+            var hide = document.getElementById('hide').checked;
+
+            var id = Math.floor(Math.random() * 100000); // 随机生成ID，可以改为其他逻辑
+            var position = pointEntity.position.getValue(Cesium.JulianDate.now());
+
+            var cartographic = Cesium.Cartographic.fromCartesian(position);
+            var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+            var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+            var height = cartographic.height;
+
+            var positionArray = [longitude, latitude, height];
+
+            // 插入数据到SQLite数据库
+            var db = window.parent.db;
+            var sql = "INSERT INTO Places (id, position, node, name, hide) VALUES (?, ?, ?, ?, ?)";
+            db.run(sql, [id, JSON.stringify(positionArray), node, name, hide], function(err) {
+                if (err) {
+                    console.log(err.message);
+                    return;
+                }
+                alert('Place added successfully!');
+            });
+        });
+    </script>
+</body>
+</html>

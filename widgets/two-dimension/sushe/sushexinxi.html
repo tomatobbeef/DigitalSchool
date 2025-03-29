@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sushexinxi</title>
+    <link rel="stylesheet" href="../../../layui.css">
+    <link rel="stylesheet" href="../../../new.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="layui-card">
+                <div class="layui-card-header">宿舍信息</div>
+                <div class="layui-card-body">
+                    <div class="name-container">
+                        <!-- 这里显示获取到的宿舍名称 -->
+                    </div>
+                    <div class="chart-container" id="chart-container" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../layui.js"></script>
+    <script src="echarts.js"></script>
+    <script>
+        layui.use(['layer', 'util'], function() {
+        var layer = layui.layer;
+        var util = layui.util;
+
+        // 获取 URL 中的 ID
+        var urlParams = new URLSearchParams(window.location.search);
+        var id = urlParams.get('id');
+
+        // 根据 ID 从数据库中获取宿舍名称并显示
+        if (window.parent && window.parent.db) {
+            var stmt = `SELECT name FROM dormitories WHERE id = ${id}`;
+            var row = window.parent.db.exec(stmt);
+            if (row && row.length > 0 && row[0].values.length > 0) {
+                var name = row[0].values[0][0];
+                var nameContainer = document.querySelector('.name-container');
+                nameContainer.innerHTML = '<span>宿舍名称：</span>' + name;
+            } else {
+                layer.msg('未找到对应宿舍信息', { icon: 2 });
+            }
+        }
+
+        // 生成随机数据用于饼状图
+        var pieData = [];
+        var lbname = ['研一','研二','研三','',''];
+        for (var i = 0; i < 3; i++) {
+            pieData.push({
+                // name: '类别' + (i + 1),
+                name: lbname[i],
+                value: Math.floor(Math.random() * 100)
+            });
+        }
+
+        // 绘制饼状图
+        renderPieChart(pieData);
+
+        // 使用 echarts 绘制饼状图
+        function renderPieChart(data) {
+            var chartContainer = document.getElementById('chart-container');
+            var myChart = echarts.init(chartContainer);
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: '宿舍信息统计',
+                    left: 'center',
+                    textStyle: {
+                        color: '#09cad0'  // 修改标题文字颜色
+                    }
+                },
+                tooltip: {},
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    top: '10%',  // 增加top属性，设置图例距离顶部的距离
+                    textStyle: {
+                        color: '#09cad0'  // 修改图例文字颜色
+                    }
+                },
+                series: [{
+                    name: '信息',
+                    type: 'pie',
+                    radius: '50%',
+                    data: data,
+                    label: {
+                        color: '#09cad0'  // 修改饼图标签文字颜色
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        },
+                        label: {
+                            color: '#09cad0'  // 修改饼图强调状态下标签文字颜色
+                        }
+                    }
+                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+    });
+
+    </script>
+</body>
+</html>

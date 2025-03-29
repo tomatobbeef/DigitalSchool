@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Layers</title>
+    <link rel="stylesheet" href="../../../new.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #2da6e4;
+        }
+        .layerItem {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .layerCheckbox {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body onload="onLoad()">
+    <div id="layerNames"></div>
+
+    <script>
+        function onLoad() {
+            // 获取地图对象
+            const map = window.parent.appk.openlayersMap;
+
+            // 获取地图中所有图层的名称和可见状态
+            const layers = map.getLayers().getArray();
+
+            // 将图层名称和可见状态显示在页面上
+            const layerNamesDiv = document.getElementById('layerNames');
+            layerNamesDiv.innerHTML = '<h3>地图图层：</h3>';
+
+            layers.forEach(layer => {
+                const layerName = layer.get('name');
+                const layerVisible = layer.getVisible();
+                const layerItemDiv = document.createElement('div');
+                layerItemDiv.classList.add('layerItem');
+                layerItemDiv.innerHTML = `
+                    <input type="checkbox" class="layerCheckbox" id="${layerName}" ${layerVisible ? 'checked' : ''}>
+                    <label for="${layerName}">${layerName}</label>
+                `;
+                layerNamesDiv.appendChild(layerItemDiv);
+
+                // 添加点击事件监听器，切换图层的可见状态
+                const checkbox = document.getElementById(layerName);
+                checkbox.addEventListener('change', () => {
+                    layer.setVisible(checkbox.checked);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

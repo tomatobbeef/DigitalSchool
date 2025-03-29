@@ -1,0 +1,271 @@
+<!DOCTYPE html>  
+<html lang="zh">  
+<head>  
+    <meta charset="UTF-8">  
+    <title>人员分布</title>  
+    <link rel="stylesheet" href="../../../new.css">
+    <!-- 引入 ECharts 文件 -->  
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.3.3/echarts.min.js"></script>  
+    <style>  
+        /* 设置图表容器的样式，确保背景不是透明的，并且图表能够撑满容器 */  
+        .chart-container {  
+            width: 100%;  
+            height: 50%; /* 设定容器的高度为页面高度的50% */  
+            display: flex; /* 使用flex布局使子元素并排显示 */  
+            justify-content: space-between; /* 使子元素在水平方向上均匀分布（这里其实不需要，因为子元素只有两个且各占50%） */  
+        }  
+        #scatterChart,#barChart {    
+    width: 80%; /* 设置为100%以占满父元素 */    
+    height: 100%; /* 设置为100%以占满父元素 */    
+    background-color: rgba(2, 45, 105, 0.6); /* 设置背景颜色为半透明的白色 */    
+    padding: 0;    
+    margin: 0;    
+    box-sizing: border-box;    
+}
+#lineChart {    
+    width: 100%; /* 设置为100%以占满父元素 */    
+    height: 100%; /* 设置为100%以占满父元素 */    
+    background-color: rgba(9, 88, 167, 0.6); /* 设置背景颜色为半透明的白色 */    
+    padding: 0;    
+    margin: 0;    
+    box-sizing: border-box;    
+}
+        /* 如果需要，可以设置body和html样式来确保没有默认的边距或填充 */  
+        body, html {  
+            height: 100%; /* 设置高度为100%，以便内容可以撑满视口 */  
+            margin: 0;  
+            padding: 0;  
+            overflow: hidden; /* 防止滚动条出现（如果需要的话） */  
+        }  
+        /* 其他元素的样式 */  
+        #me, #other-div {  
+            /* ... */  
+        }  
+    </style>  
+    <!-- 其他 meta 标签和样式 -->  
+</head>  
+<body>  
+    <!-- 用于显示图表的容器 -->  
+    <!-- <div id="main"></div>   -->
+    <div class="chart-container">  
+        <div id="scatterChart"></div>  
+        <div id="barChart"></div>  
+    </div>  
+
+    <div id="lineChart" style="width: 100%; height: 50%"></div>  
+    <!-- 其他元素 -->  
+    <div id="me" style="position: absolute; /* 其他样式 */">...</div>  
+    <div id="other-div" style="position: absolute; /* 其他样式 */">...</div>  
+    <button onclick="cl()" style="position: absolute;right:0%;top: 0%;z-index: 2;">关闭</button>
+    <script>  
+        // 基于准备好的dom，初始化echarts实例  
+        var myChart = echarts.init(document.getElementById('lineChart'));  
+  
+        // 指定图表的配置项和数据  
+        var option = {  
+            title: {  
+                text: '人流统计'  ,
+                textStyle: { // 设置图例文本样式  
+                    color: '#09cad0' // 白色字体  
+        } 
+            },  
+            tooltip: {  
+                trigger: 'axis'  
+            },  
+            legend: {  
+                data:['人数']  ,
+                textStyle: { // 设置图例文本样式  
+                    color: '#09cad0' // 白色字体  
+        } 
+            },  
+            grid: {  
+                left: '3%',  
+                right: '4%',  
+                bottom: '3%',  
+                containLabel: true  
+            },  
+            toolbox: {  
+                feature: {  
+                    saveAsImage: {}  
+                }  
+            },  
+            xAxis: {  
+                type: 'category',  
+                boundaryGap: false,  
+                data: [], // 这里的数据将会动态更新  
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                }
+            },  
+            yAxis: {  
+                type: 'value',  
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                }
+            },  
+            series: [  
+                {  
+                    name:'人数',  
+                    type:'line',  
+                    stack: '总量',  
+                    areaStyle: {
+                        color: '#FF0000'
+                    },  
+                    lineStyle: { // 设置线条样式  
+                color: '#FF0000' // 红色线条  
+            }, 
+                    data:[] // 这里的数据将会动态更新  
+                }  
+            ]  
+        };  
+        // 使用刚指定的配置项和数据显示图表。  
+        myChart.setOption(option);  
+        setInterval(function () {  
+            // 假设这里有一个函数 getData() 用于获取新的数据  
+            var newData = getData(); // 替换为获取实际数据的代码  
+  
+            // 更新 xAxis 和 series.data  
+            option.xAxis.data = newData.x;  
+            option.series[0].data = newData.y;  
+  
+            // 使用新选项更新图表  
+            myChart.setOption(option);  
+        }, 2000); // 每 2 秒更新一次数据  
+        // 窗口大小改变时调整图表大小  
+        window.onresize = function () {  
+            myChart.resize();  
+        };  
+
+        // 初始化散点图  
+        var scatterChart = echarts.init(document.getElementById('scatterChart'));  
+  
+  // 假设这是散点图的数据  
+  var scatterData = [
+    // 这里使用二维数组来表示散点数据，每个子数组的第一个值为x轴坐标，第二个值为y轴坐标
+    ['宿舍', 20],
+    ['教学楼', 30],
+    ['学院楼', 10],
+    ['食堂', 40],
+    ['图书馆', 50]
+    // ... 可以继续添加更多数据点
+];
+
+    
+  // 设置散点图的配置项和数据  
+  scatterChart.setOption({  
+      title: {  
+          text: '人员分布' , 
+          textStyle: { // 设置图例文本样式  
+            color: '#09cad0' // 白色字体  
+          }
+      },  
+      tooltip: {},  
+      xAxis: {  
+        type: 'category', // 修改为category类型
+        data: ['宿舍', '教学楼', '学院楼', '食堂', '图书馆'],  
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                },
+        boundaryGap: [0, '30%']
+      },  
+      yAxis: {  
+          type: 'value',  
+          boundaryGap: ['30%', 0],  
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                }  
+      },  
+      series: [{  
+          name: '散点图',  
+          textStyle: { // 设置图例文本样式  
+            color: '#09cad0' // 白色字体  
+            },
+          type: 'scatter',  
+          data: scatterData, // 将数据赋值给series的data属性  
+          symbolSize: function (val) {  
+              // 可以通过函数设置散点的大小，这里为了简单直接返回固定值  
+              return 20;  
+          },  
+          label: {  
+              show: true,  
+              formatter: '{b}' // 显示数据标签，{b}表示数据名称（在这里没有数据名称，所以只显示空字符串）  
+          },  
+          itemStyle: {  
+              emphasis: {  
+                  borderColor: '#09cad0',  
+                  borderWidth: 1  
+              }  
+          }  
+      }]  
+  });
+
+  var barChart = echarts.init(document.getElementById('barChart'));  
+  var option_bar = {  
+    title: {  
+        text: '事件统计'  ,
+        textStyle: { // 设置图例文本样式  
+            // color: '#fff' // 白色字体  
+            }
+    },  
+    tooltip: {},  
+    legend: {  
+        data:['次数']  
+    },  
+    xAxis: {  
+        data: ["研一学生","研二学生","研三学生","教职工","大一","大二","大三","大四"]  ,
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                }
+    },  
+    yAxis: {textStyle: { // 设置图例文本样式  
+            color: '#09cad0' // 白色字体  
+            // color: '#fff' // 白色字体  
+            }},  
+    series: [{  
+        name: '数量',  
+        type: 'bar',  
+        data: [5, 20, 36, 10, 10, 20, 17, 28, 33] ,  
+                axisLabel: {
+                    color: '#09cad0' // 设置x轴标签文字颜色
+                }
+    }]  
+};  
+  
+// 使用刚指定的配置项和数据显示图表  
+barChart.setOption(option_bar);
+// 模拟数据生成函数  
+function getData() {  
+    var xData = [];  
+    var yData = [];  
+    var len = 100; // 假设我们展示最近100个数据点  
+    var baseValue = 50; // 假设初始值或基准值为50  
+    var changeRange = 10; // 假设每次数据变化的最大范围是±10  
+    var now = new Date();  
+      
+    // 生成第一个数据点  
+    xData.push(echarts.format.formatTime('yyyy-MM-dd hh:mm:ss', now)); // 注意：这里使用 push 而不是 unshift  
+    yData.push(baseValue);  
+      
+    // 生成后续数据点，基于前一个数据点变化  
+    for (var i = 1; i < len; i++) {  
+        now = new Date(now - 1000); // 假设每个数据点间隔2秒  
+        var change = Math.random() * (2 * changeRange) - changeRange; // 随机变化量  
+        baseValue += change; // 更新基准值  
+        baseValue = Math.max(0, Math.min(100, baseValue)); // 确保值在0到100之间  
+        xData.push(echarts.format.formatTime('yyyy-MM-dd hh:mm:ss', now));  
+        yData.push(Math.round(baseValue));  
+    }  
+      
+    // 因为我们是正向添加数据的，所以不需要反转数组  
+    return {  
+        x: xData,  
+        y: yData  
+    };  
+}   
+        function cl()
+        {
+            window.parent.appk.iframeVisible=false;
+        }
+    </script>  
+</body>  
+</html>

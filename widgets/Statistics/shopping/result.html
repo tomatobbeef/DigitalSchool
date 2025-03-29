@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ch">
+    <head>
+        <title>弹窗子页面</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <!-- 移动设备 viewport -->
+        <meta name="viewport"
+              content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui">
+        <meta name="author" content="https://www.cqism.cn/ ">
+        <!-- 360浏览器默认使用Webkit内核 -->
+        <meta name="renderer" content="webkit">
+        <!-- Chrome浏览器添加桌面快捷方式（安卓） -->
+        <link rel="icon" type="image/png" href="../../img/favicon/favicon.png">
+        <meta name="mobile-web-app-capable" content="yes">
+        <!-- Safari浏览器添加到主屏幕（IOS） -->
+        <link rel="icon" sizes="192x192" href="img/favicon/apple-touch-icon.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="">
+        <!-- Win8标题栏及ICON图标 -->
+        <link rel="apple-touch-icon-precomposed" href="../../img/favicon/apple-touch-icon.png">
+        <meta name="msapplication-TileImage" content="../../img/favicon/app-icon72x72@2x.png">
+        <meta name="msapplication-TileColor" content="#62a8ea">
+        <link rel="stylesheet" href="../../../new.css">
+    
+        <!-- 第3方lib引入 -->
+        <!-- 引入cesium -->
+        <script src="../../../mapgis/cdn/cesium/Cesium.js"></script>
+        <script src="../../../lib/jquery/jquery-1.10.2.min.js"></script>
+        <!-- 引入vue -->
+        <script src="../../../lib/vue/vue.js"></script>
+        <script src="result.js"></script>
+        <link href="../../../css/widget-win.css" rel="stylesheet"/>
+    
+        <style>
+            .btn_none {
+                background: none;
+                /*color: #bffbff;*/
+                color: #30bbff;
+                font-size: 12px;
+            }
+            .btn_none:hover {
+                color: #00ffff;
+    
+            }
+    
+    
+            .btn-group {
+                display: flex;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                padding-left: 20px;
+            }
+    
+            .tool-btn {
+                cursor: pointer;
+                user-select: none;
+                min-width: 62px;
+                height: 96px;
+                box-sizing: border-box;
+                margin: 0 26px 10px 0;
+                text-align: center;
+                padding-top: 12px;
+            }
+    
+            .tool-thum {
+                transition: all .2s ease;
+                width: 45px;
+                height: 45px;
+                margin: 0 auto;
+                /*border-radius: 50%;*/
+                margin-bottom: 10px;
+                /*background: #fd960f;*/
+                cursor: pointer;
+                background: url('image/iconButtonBg.png') bottom center no-repeat;
+                background-size: 100% 100%;
+            }
+            .tool-thum:hover{
+                background: url('image/iconButtonBg_h.png') bottom center no-repeat;
+                background-size: 100% 100%;
+            }
+    
+            .tool-thum img {
+                width: 22px;
+                height: 22px;
+                margin: 11px;
+                fill: #30bbff;;
+            }
+    /*清空按钮*/
+            #btn_measure_clear {
+                background: url('../../img/UI/button_b.png') bottom center no-repeat;
+                background-size: 100% 100%;
+                color: #30bbff;
+                margin-top: 15px;
+                width: 135px;
+                /*border-radius: 15px;*/
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+            #btn_measure_clear:hover {
+                background: url('../../img/UI/button_h.png') bottom center no-repeat;
+                background-size: 100% 100%;
+                color: #fff;
+                margin-top: 15px;
+                /*border-radius: 15px;*/
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+    /*下拉菜单*/
+            .form-control{
+                /*清除原样式*/
+                -webkit-appearance: none;   /* google */
+                -moz-appearance: none;  /* firefox */
+                appearance: none;       /* IE */
+    
+                /*width: 150px;*/
+                border: 1px solid #00ffff;
+                background: #16608f;
+                color: #00ffff;
+                border-radius: 0px;
+                /*margin-right: 10px;*/
+            }
+            option {
+                background: #16608f;
+                border:1px solid #00ffff;
+                padding-right: 10px;
+                padding-left: 10px;
+                -webkit-appearance: none;
+                appearance: none;
+                color: #00ffff;
+            }
+    
+            option:hover {
+                background-color: #00fff4;
+                border: none;
+            }
+        </style>
+        
+    </head>
+<body style="padding:5px;text-align:center;position: absolute;width: 50%;left: 25%;" title="">
+    <div>
+        <button onclick="cl()" style="position: absolute;right:0%;top: 0%;z-index: 2;">关闭</button>
+        <div style="position: absolute;width: 80%;height: 100%;right: 0%;top: 0%;background-color: aqua;overflow:scroll;"id="cozone">
+        
+        </div>
+        <div style="position: absolute;width: 20%;height: 100%;left: 0%;top: 0%;background-color: none;">
+            <div>
+                <select id="sel1" onchange="changef()" style="width: 100%;">
+                    <option value=-1>———未选择———</option>
+                </select>
+                <br>
+                <select id="sel2" onchange="changec()" style="width: 100%;">
+                    <option value="-1">———未选择———</option>
+                </select>
+                <br>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

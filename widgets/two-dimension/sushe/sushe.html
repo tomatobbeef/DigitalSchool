@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dormitory Information</title>
+    <script src="../../../layui.js"></script>
+    <link rel="stylesheet" href="../../../new.css">
+    <style>
+        body {
+            color: white; /* 白色文字 */
+        }
+        .container {
+            margin: 20px;
+        }
+        .row {
+            margin-bottom: 10px;
+        }
+        .row label {
+            display: inline-block;
+            width: 150px;
+        }
+        .row input {
+            width: 100%;
+        }
+        .btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        /* 增加按钮的样式 */
+        .custom-spinner.increase {
+        top: 0;  
+        right: 22px;
+        }
+
+        /* 减少按钮的样式 */
+        .custom-spinner.decrease {
+        bottom: 0;
+        right: 0px;
+        }
+        
+        /* 输入框样式 */
+        .row input[type=number] {
+        /* display: inline-block; 确保input可以与其他元素在同一行 */
+        padding: 0; /* 根据需要调整内边距 */
+        }
+
+        /* 按钮容器样式 */
+        .spinner-wrapper {
+        display: inline-flex;
+        align-items: center; /* 垂直居中对齐所有子元素 */
+        position: relative;
+        }
+
+        /* 自定义按钮的基本样式 */
+        .custom-spinner {
+        width: 20px;
+        height: 100%;
+        /* background-color: #09cad0;
+        color: #16608f;
+        border: none;
+        cursor: pointer; */
+        border-radius: 3px;
+        line-height: 20px;
+        text-align: center;
+        font-size: 14px;
+        position: absolute; /* 相对于spinner-wrapper定位 */
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <label for="name">名称:</label>
+            <input type="text" id="name" name="name">
+        </div>
+        <div class="row">
+            <label for="dorm_quantity">宿舍数量:</label>
+            <input type="text" id="dorm_quantity" name="dorm_quantity">
+        </div>
+        <div class="row">
+            <label for="four_people_quantity">4人间数量:</label>
+            <input type="text" id="four_people_quantity" name="four_people_quantity">
+        </div>
+        <div class="row">
+            <label for="six_people_quantity">6人间数量:</label>
+            <input type="text" id="six_people_quantity" name="six_people_quantity">
+        </div>
+        <div class="row">
+            <label for="admin_name">管理员姓名:</label>
+            <input type="text" id="admin_name" name="admin_name">
+        </div>
+        <div class="row">
+            <label for="admin_phone">管理员电话:</label>
+            <input type="tel" id="admin_phone" name="admin_phone">
+        </div>
+        <div class="row">
+            <label for="college">所属学院:</label>
+            <input type="text" id="college" name="college">
+        </div>
+        <div class="row">
+            <button class="btn" onclick="update()">更新</button>
+            <button class="btn" onclick="remove()">删除</button>
+            <button class="btn" onclick="message()">信息</button>
+        </div>
+    </div>
+
+    <script>
+        function update() {
+            // 获取输入框中的数据
+            const name = document.getElementById('name').value;
+            const dormQuantity = document.getElementById('dorm_quantity').value;
+            const fourPeopleQuantity = document.getElementById('four_people_quantity').value;
+            const sixPeopleQuantity = document.getElementById('six_people_quantity').value;
+            const adminName = document.getElementById('admin_name').value;
+            const adminPhone = document.getElementById('admin_phone').value;
+            const college = document.getElementById('college').value;
+
+            // 更新数据库中对应行的数据
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const statement = `
+                UPDATE dormitories 
+                SET name = ?,
+                    dormitoryNum = ?,
+                    fourPeopleRoomNum = ?,
+                    sixPeopleRoomNum = ?,
+                    adminName = ?,
+                    adminPhone = ?,
+                    college = ?
+                WHERE id = ?`;
+
+            const values = [
+                name,
+                dormQuantity,
+                fourPeopleQuantity,
+                sixPeopleQuantity,
+                adminName,
+                adminPhone,
+                college,
+                id
+            ];
+
+            window.parent.db.exec(statement, values);
+            console.log("数据已更新");
+            window.parent.appk.erdrefresh();
+        }
+
+        function remove() {
+            // 获取 URL 参数中的 ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            // 删除数据库中对应的行
+            window.parent.db.exec(`DELETE FROM dormitories WHERE id = ${id}`);
+            console.log("数据已删除");
+
+            // 重新排列数据，这里可以根据实际需求进行操作
+            // 例如重新加载页面或者重新加载数据列表等
+            window.parent.appk.erdrefresh();
+        }
+
+        window.onload = function() {
+        // 获取 URL 参数中的 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        // 使用 ID 从父页面的数据库中获取相应的数据，并显示在输入框中
+        if (window.parent && window.parent.db) {
+            const rows = window.parent.db.exec(`SELECT name, dormitoryNum, fourPeopleRoomNum, sixPeopleRoomNum, adminName, adminPhone, college FROM dormitories WHERE id = ${id}`);
+            if (rows && rows.length > 0 && rows[0].values.length > 0) {
+                const rowData = rows[0].values[0];
+                // 将数据显示在对应的输入框中
+                document.getElementById('name').value = rowData[0] || ''; // name
+                document.getElementById('dorm_quantity').value = rowData[1] || ''; // dormitoryNum
+                document.getElementById('four_people_quantity').value = rowData[2] || ''; // fourPeopleRoomNum
+                document.getElementById('six_people_quantity').value = rowData[3] || ''; // sixPeopleRoomNum
+                document.getElementById('admin_name').value = rowData[4] || ''; // adminName
+                document.getElementById('admin_phone').value = rowData[5] || ''; // adminPhone
+                document.getElementById('college').value = rowData[6] || ''; // college
+
+                // 将除了当前 ID 外的其他行的 highlight 置为 0
+                window.parent.db.exec(`UPDATE dormitories SET highlight = 0 WHERE id != ${id}`);
+                // 将当前 ID 对应的 highlight 置为 1
+                window.parent.db.exec(`UPDATE dormitories SET highlight = 1 WHERE id = ${id}`);
+
+                window.parent.appk.erdrefresh();
+            } else {
+                console.log("No data found for ID", id);
+            }
+        } else {
+            console.log("Parent window or database not found.");
+        }
+    };
+
+        function message(){
+        // 获取 URL 参数中的 ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            window.parent.appk.openPopup('widgets/two-dimension/sushe/sushexinxi.html?id='+id);
+        }
+
+    // 通用函数，用于初始化自定义的增减按钮
+function initializeCustomSpinners(inputIds) {
+  inputIds.forEach(function(id) {
+    var input = document.getElementById(id);
+    input.style.width="65%"; 
+    input.style.left="0%"; 
+    // 创建按钮容器
+    var spinnerWrapper = document.createElement('div');
+    spinnerWrapper.classList.add('spinner-wrapper');
+
+    // 创建增加按钮
+    var increaseButton = document.createElement('button');
+    increaseButton.type = 'button';
+    increaseButton.classList.add('custom-spinner', 'increase');
+    increaseButton.textContent = '+';
+
+    // 创建减少按钮
+    var decreaseButton = document.createElement('button');
+    decreaseButton.type = 'button';
+    decreaseButton.classList.add('custom-spinner', 'decrease');
+    decreaseButton.textContent = '-';
+
+    // 绑定增加按钮事件
+    increaseButton.addEventListener('click', function() {
+      var value = parseInt(input.value) || 0;
+      input.value = value + 1;
+    });
+
+    // 绑定减少按钮事件
+    decreaseButton.addEventListener('click', function() {
+      var value = parseInt(input.value) || 0;
+      if (value > 0) {
+        input.value = value - 1;
+      }
+    });
+
+    // 将按钮添加到容器中
+    spinnerWrapper.appendChild(increaseButton);
+    spinnerWrapper.appendChild(decreaseButton);
+
+    // 将输入框和按钮容器添加到原始父元素中
+    var wrapper = input.parentElement;
+    wrapper.appendChild(spinnerWrapper);
+    spinnerWrapper.insertBefore(input, decreaseButton);
+  });
+}
+
+// 窗口加载完成后初始化
+window.onload = function() {
+  // 传入一个包含输入框ID的数组
+  var inputIds = ['dorm_quantity', 'four_people_quantity', 'six_people_quantity'];
+  initializeCustomSpinners(inputIds);
+};
+
+
+    </script>
+</body>
+</html>

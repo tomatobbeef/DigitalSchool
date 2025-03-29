@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html class="no-js css-menubar" lang="zh-cn">
+
+<head>
+    <title>弹窗子页面</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <!-- 移动设备 viewport -->
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui">
+    <!-- 360浏览器默认使用Webkit内核 -->
+    <meta name="renderer" content="webkit">
+    <!-- Chrome浏览器添加桌面快捷方式（安卓） -->
+    <link rel="icon" type="image/png" href="../../img/favicon/favicon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Safari浏览器添加到主屏幕（IOS） -->
+    <link rel="icon" sizes="192x192" href="img/favicon/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="">
+    <!-- Win8标题栏及ICON图标 -->
+    <link rel="apple-touch-icon-precomposed" href="../../img/favicon/apple-touch-icon.png">
+    <meta name="msapplication-TileImage" content="../../img/favicon/app-icon72x72@2x.png">
+    <meta name="msapplication-TileColor" content="#62a8ea">
+
+    <!-- 第3方lib引入 -->
+    <script include="vue,d3,proj4,geohash,geojson,shapefile,turf,mapv,echarts,elasticsearch,plugin,vue,antd" src="../../libmars/mapgis/include-cesium-local.js"></script>
+    <link href="../../css/widget-win.css" rel="stylesheet"/>
+    <!-- 引入cesium -->
+    <script src="../../mapgis/cdn/cesium/Cesium.js"></script>
+
+    <style>
+        .btn_none {
+            background: none;
+            /*color: #bffbff;*/
+            color: #30bbff;
+            font-size: 12px;
+        }
+        .btn_none:hover {
+            color: #00ffff;
+
+        }
+
+
+        .btn-group {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding-left: 20px;
+        }
+
+        .tool-btn {
+            cursor: pointer;
+            user-select: none;
+            min-width: 62px;
+            height: 96px;
+            box-sizing: border-box;
+            margin: 0 26px 10px 0;
+            text-align: center;
+            padding-top: 12px;
+        }
+
+        .tool-thum {
+            transition: all .2s ease;
+            width: 45px;
+            height: 45px;
+            margin: 0 auto;
+            /*border-radius: 50%;*/
+            margin-bottom: 10px;
+            /*background: #fd960f;*/
+            cursor: pointer;
+            background: url('image/iconButtonBg.png') bottom center no-repeat;
+            background-size: 100% 100%;
+        }
+        .tool-thum:hover{
+            background: url('image/iconButtonBg_h.png') bottom center no-repeat;
+            background-size: 100% 100%;
+        }
+
+        .tool-thum img {
+            width: 22px;
+            height: 22px;
+            margin: 11px;
+            fill: #30bbff;;
+        }
+/*清空按钮*/
+        #btn_measure_clear {
+            background: url('../../img/UI/button_b.png') bottom center no-repeat;
+            background-size: 100% 100%;
+            color: #30bbff;
+            margin-top: 15px;
+            width: 135px;
+            /*border-radius: 15px;*/
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+        #btn_measure_clear:hover {
+            background: url('../../img/UI/button_h.png') bottom center no-repeat;
+            background-size: 100% 100%;
+            color: #fff;
+            margin-top: 15px;
+            /*border-radius: 15px;*/
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+/*下拉菜单*/
+        .form-control{
+            /*清除原样式*/
+            -webkit-appearance: none;   /* google */
+            -moz-appearance: none;  /* firefox */
+            appearance: none;       /* IE */
+
+            /*width: 150px;*/
+            border: 1px solid #00ffff;
+            background: #16608f;
+            color: #00ffff;
+            border-radius: 0px;
+            /*margin-right: 10px;*/
+        }
+        option {
+            background: #16608f;
+            border:1px solid #00ffff;
+            padding-right: 10px;
+            padding-left: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            color: #00ffff;
+        }
+
+        option:hover {
+            background-color: #00fff4;
+            border: none;
+        }
+    </style>
+    
+</head>
+
+
+<body style="padding:5px;text-align:center;" title="提示：单击按钮激活对应功能,在地图上单击开始，绘制中单击增加点、双击结束。">
+
+<div class="btn-group">
+    <div id="btn_measure_length" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #dd751b;" ><img src="image/measure-length.svg" alt="空间距离"></div>-->
+        <div class="tool-thum" onclick="relitu()"><img src="image/measure-length.svg" alt="空间距离"></div>
+        <span class="btn_none"> 热力图 </span>
+    </div>
+
+    <div id="btn_measure_length_td" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #c092fe;"><img src="image/measure-length2.svg" alt="贴地距离"></div>-->
+        <div class="tool-thum" onclick="spacedistancetd()"><img src="image/measure-length2.svg" alt="贴地距离"></div>
+        <span class="btn_none"> 贴地距离 </span>
+    </div>
+   
+
+    <div id="btn_measure_area" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #3de3f4;"><img src="image/measure-area.svg" alt="面积"></div>-->
+        <div class="tool-thum" onclick="areamea()"><img src="image/measure-area.svg" alt="面积"></div>
+        <span class="btn_none"> 面积 </span>
+    </div>
+
+    <div id="btn_measure_height" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #55d5a0;"><img src="image/measure-height.svg" alt="高度差"></div>-->
+        <div class="tool-thum" onclick="heightmea()"><img src="image/measure-height.svg" alt="高度差"></div>
+        <span class="btn_none"> 高度差 </span>
+    </div>
+
+    <!--<div  class="tool-thum" style="background: #37bc41;"><img src="image/measure-height-sup.svg" alt="三角测量"></div>-->
+    <!-- <div id="btn_measure_supHeight" class="tool-btn">
+        <div class="tool-thum"><img src="image/measure-height-sup.svg" alt="三角测量"></div>
+        <span class="btn_none"> 三角测量 </span>
+    </div> -->
+
+    <div id="btn_measure_angle" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #95d333;"><img src="image/measure-angle.svg" alt="角度"></div>-->
+        <div class="tool-thum" onclick="tanglemea()"><img src="image/measure-angle.svg" alt="角度"></div>
+        <span class="btn_none"> 角度 </span>
+    </div>
+
+    <div id="btn_measure_point" class="tool-btn">
+        <!--<div  class="tool-thum" style="background: #babc31;"><img src="image/measure-coor.svg" alt="坐标测量"></div>-->
+        <div class="tool-thum" onclick="positionmea()"><img src="image/measure-coor.svg" alt="坐标测量"></div>
+        <span class="btn_none"> 坐标测量 </span>
+    </div>
+
+    
+</div>
+
+<div id="measure_danwei" style="margin-top:5px;">
+    <span style="font-size: 14px;margin-left: -37px;;color: #30bbff">单位</span>
+    <select id="measure_length_danwei" onchange="cha()" class="form-control" style="width:135px!important; margin-left: 8px; color: #00ffff;background-color: #16608f;">
+        <option value="auto">自动</option>
+        <option value="m">米</option>
+        <option value="bm">百米</option>
+        <option value="km">千米</option>
+        <!--<option value="mile">海里</option>
+        <option value="zhang">丈</option>-->
+    </select>
+    <select id="measure_area_danwei" class="form-control" style="width:135px!important;display:none;margin-left: 8px; color: #00ffff;background-color: #16608f;">
+        <option value="auto">自动</option>
+        <option value="m">平方米</option>
+        <option value="km">平方千米</option>
+        <option value="mu">亩</option>
+        <option value="ha">公顷</option>
+    </select>
+</div>
+
+<div style="margin-top:5px;">
+    <span id="lbl_measure_result" style="font-size: 16px;"></span>
+</div>
+
+<div style="width: 100%;">
+    <p id="btresult" type="button" style="width: 100%;text-align: center;color: #fff;" >
+            <!--style="background: #0077ff; color:#fff;margin-top:15px; border-radius: 15px; padding-left:30px; padding-right:30px;">-->
+        测量数据
+    </p>
+</div>
+
+<div>
+    <button id="btn_measure_clear" type="button" class="btn" onclick="delda()" >
+            <!--style="background: #0077ff; color:#fff;margin-top:15px; border-radius: 15px; padding-left:30px; padding-right:30px;">-->
+
+        清空测量数据
+    </button>
+</div>
+
+<!--页面js-->
+<script src="view.js?time=20191008"></script>
+</body>
+
+</html>

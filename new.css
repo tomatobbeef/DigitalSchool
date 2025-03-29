@@ -1,0 +1,93 @@
+
+/* 统一设置所有按钮的样式 */
+button {
+    border-radius: 8px;
+    /* border-style: none; */
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #62c3f4; /* 文字颜色 */
+    background-image: linear-gradient(92.88deg, #3b58c2 9.16%, #0f2e81 43.89%, #172c5f 64.72%);
+}
+
+/* 统一设置所有输入框的样式 */
+input[type="text"], input[type="password"], input[type="email"], input[type="number"] ,input[type="tel"] {
+    border-color: #09cad0; /* 边框颜色 */
+    color: #09cad0; /* 文字颜色 */
+    background-color: #16608f; /* 背景颜色 */
+}
+
+/* 统一设置所有表单的提交按钮的样式 */
+input[type="submit"] {
+    border-color: #05b3b8; /* 边框颜色 */
+    color: #2da6e4; /* 文字颜色 */
+    background-color: #142645; /* 背景颜色 */
+}
+
+
+/* 统一设置所有选择框的样式 */
+select {
+    position: relative;
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    -webkit-appearance: none; /* 去除默认样式 */
+    -moz-appearance: none;
+    appearance: none;
+    width: 180px;
+    padding: 10px 15px;
+    font-size: 16px;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    background-color: #1e2a4f;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+}
+select:hover{
+    background-color: #2a3e6c;
+}
+
+p {
+    color: #09cad0
+}
+
+label {
+    color: #09cad0
+}
+/* 设置layui-form-item中的输入框样式 */
+.layui-layer-dialog{
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #09cad0 !important; /* 文字颜色 */
+    background-color: #16608f !important; /* 背景颜色 */
+}
+.layui-layer{
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #09cad0 !important; /* 文字颜色 */
+    background-color: #16608f !important; /* 背景颜色 */
+}
+
+.layui-card{
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #09cad0 !important; /* 文字颜色 */
+    background-color: #16608f !important; /* 背景颜色 */
+}
+
+.layui-layer-title{
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #09cad0 !important; /* 文字颜色 */
+    background-color: #16608f !important; /* 背景颜色 */
+}
+.layui-card-header{
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #09cad0 !important; /* 文字颜色 */
+    background-color: #16608f !important; /* 背景颜色 */
+}
+
+.layui-layer-btn0{
+    border-radius: 8px;
+    /* border-style: none; */
+    border-color: #09cad0 !important; /* 边框颜色 */
+    color: #62c3f4; /* 文字颜色 */
+    background-image: linear-gradient(92.88deg, #3b58c2 9.16%, #0f2e81 43.89%, #172c5f 64.72%);
+
+}

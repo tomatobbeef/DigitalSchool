@@ -1,0 +1,165 @@
+:root {
+    --pre   : rgba(0, 0, 0, .5);
+    --child : #fff;
+    --size  : 35px;
+}
+
+.low-loading{
+    width: 100%;height: 100%;
+    background-color: var(--pre, rgba(0, 0, 0, .5));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 99999999;
+    top: 0;left: 0;
+}
+
+
+/* 类-圆 */
+.low-loading>.round-no1{
+    display: block;
+    height : var(--size, 35px);width : var(--size, 35px);
+    border : 2px solid var(--child, #fff);
+    border-left-color : transparent;
+    border-right-color : transparent;
+    border-radius : 50%;
+    animation : round-no1 2s infinite;
+    -webkit-animation : round-no1 2s infinite;
+    position: relative;
+}
+  
+@-webkit-keyframes round-no1 {
+    0% {-webkit-transform : rotate(0deg);transform : rotate(0deg);}
+    50% {-webkit-transform : rotate(360deg);transform : rotate(360deg);}
+    100% {-webkit-transform : rotate(0deg);transform : rotate(0deg);}
+}
+@keyframes round-no1 {
+    0% {-webkit-transform : rotate(0deg);transform : rotate(0deg);}
+    50% {-webkit-transform : rotate(360deg);transform : rotate(360deg);}
+    100% {-webkit-transform : rotate(0deg);transform : rotate(0deg);}
+}
+
+
+
+
+/* 类-方 */
+.rect-no1 {
+    height : var(--size, 35px);width : var(--size, 35px);
+    background-color: var(--child, #fff);
+    -webkit-animation: rect-no1 1.2s infinite ease-in-out;
+    animation: rect-no1 1.2s infinite ease-in-out;
+}
+@-webkit-keyframes rect-no1 {
+    0% {
+        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+        transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    }
+    50% {
+        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    }
+    100% {
+        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
+}
+@keyframes rect-no1 {
+    0% {
+        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+        transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    }
+    50% {
+        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    }
+    100% {
+        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
+}
+
+
+/* 类-其他 */
+.rests-no1 {
+    height : var(--size, 35px);width : var(--size, 35px);
+    -webkit-transform: rotateZ(45deg);
+    transform: rotateZ(45deg);
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+    border-radius: 50%;
+}
+.rests-no1:before,.rests-no1:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;left: 0;
+    width: inherit;
+    height: inherit;
+    border-radius: 50%;
+    -webkit-animation: 1s rests-no1 linear infinite;
+    animation: 1s rests-no1 linear infinite;
+}
+.rests-no1:before {
+    -webkit-transform: rotateX(70deg);
+    transform: rotateX(70deg);
+}
+.rests-no1:after {
+    -webkit-transform: rotateY(70deg);
+    transform: rotateY(70deg);
+    -webkit-animation-delay: .4s;
+    animation-delay: .4s;
+}
+
+@-webkit-keyframes rests-no1 {
+    0%, 100% {
+        box-shadow: .2em 0px 0 0px var(--child, #fff);
+    }
+    12% {
+        box-shadow: .2em .2em 0 0 var(--child, #fff);
+    }
+    25% {
+        box-shadow: 0 .2em 0 0px var(--child, #fff);
+    }
+    37% {
+        box-shadow: -.2em .2em 0 0 var(--child, #fff);
+    }
+    50% {
+        box-shadow: -.2em 0 0 0 var(--child, #fff);
+    }
+    62% {
+        box-shadow: -.2em -.2em 0 0 var(--child, #fff);
+    }
+    75% {
+        box-shadow: 0px -.2em 0 0 var(--child, #fff);
+    }
+    87% {
+        box-shadow: .2em -.2em 0 0 var(--child, #fff);
+    }
+}
+@keyframes rests-no1 {
+    0%, 100% {
+        box-shadow: .2em 0px 0 0px var(--child, #fff);
+    }
+    12% {
+        box-shadow: .2em .2em 0 0 var(--child, #fff);
+    }
+    25% {
+        box-shadow: 0 .2em 0 0px var(--child, #fff);
+    }
+    37% {
+        box-shadow: -.2em .2em 0 0 var(--child, #fff);
+    }
+    50% {
+        box-shadow: -.2em 0 0 0 var(--child, #fff);
+    }
+    62% {
+        box-shadow: -.2em -.2em 0 0 var(--child, #fff);
+    }
+    75% {
+        box-shadow: 0px -.2em 0 0 var(--child, #fff);
+    }
+    87% {
+        box-shadow: .2em -.2em 0 0 var(--child, #fff);
+    }
+}
