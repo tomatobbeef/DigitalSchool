@@ -287,8 +287,14 @@ ul{
   
   .popup-content {
 	height: 100%;
-	padding: 20px;
+	/* padding: 20px; */
 	box-sizing: border-box;
+  }
+
+  #newht{
+	padding-top: 20vh;
+	padding-left: 25px;
+	padding-right: 17px;
   }
   
   button {

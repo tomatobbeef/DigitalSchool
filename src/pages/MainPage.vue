@@ -9,12 +9,12 @@
     <div class="HeaderWrapper">
       <div class="HeaderBox">
         <div class="Headertitlebox">
-          <p class="Headertitle">智慧图书馆管理系统</p>
+          <p class="Headertitle">校园全景孪生GIS管理系统</p>
         </div>
-        <div class="moduleList">
+        <!-- <div class="moduleList">
           <div v-for="module in modules" :key="module.key" class="modulechoice"
             :class="{ active: activeModule === module.key }" @click="setActive(module.key)">{{ module.name }}</div>
-        </div>
+        </div> -->
         <div class="time-info">
           <div class="currentTime">{{ currentDate }}</div>
           <div class="currentTime">{{ currentTime }}</div>
@@ -130,7 +130,7 @@ export default {
   font-size: 35px;
   font-weight: 500;
   user-select: none;
-  background: linear-gradient(to bottom, white, rgb(227, 235, 245), rgb(4, 93, 189));
+  background: linear-gradient(to bottom, white, rgb(201, 220, 244), rgb(2, 55, 111));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

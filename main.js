@@ -3491,11 +3491,14 @@ let app = new Vue({
 
 
         expandLeft() {
+            this.closePopup()
             this.leftWidth = (parseFloat(this.leftWidth) - 50).toFixed(2) + "%";
             this.rightWidth =  (parseFloat(this.rightWidth) + 50).toFixed(2) + "%";
             this.updateMap();
+            
         },
         expandRight() {
+            this.closePopup()
             this.leftWidth = (parseFloat(this.leftWidth) + 50).toFixed(2) + "%";
             this.rightWidth =  (parseFloat(this.rightWidth) - 50).toFixed(2) + "%";
             this.updateMap();
