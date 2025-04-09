@@ -294,7 +294,7 @@ ul{
   #newht{
 	padding-top: 20vh;
 	padding-left: 25px;
-	padding-right: 17px;
+	/* padding-right: 15px; */
   }
   
   button {

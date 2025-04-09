@@ -259,6 +259,10 @@ function jkxj(){
     window.parent.childopen(null,"newht","widgets/RealSenseSimulate/search/search.html")
 }
 
+function indoor(){
+    window.parent.childopen(null,"newht","widgets/RealSenseSimulate/indoor/indoor.html")
+}
+
 function park()
 {
     viewer=window.parent.vi;
@@ -279,3 +283,5 @@ function waterrepair()
 {
     window.parent.waterPrimitive.show=!window.parent.waterPrimitive.show;
 }
+
+

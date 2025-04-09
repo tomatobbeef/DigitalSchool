@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "echarts": "^5.5.0",
+    "mitt": "^3.0.1",
     "sql.js": "^1.10.3",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",

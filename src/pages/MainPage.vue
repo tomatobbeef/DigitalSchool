@@ -1,9 +1,9 @@
 <template>
   <div class="MainBox">
 
-    <!-- <router-view></router-view> -->
+    <router-view v-show="isIndoor"></router-view>
     <div class="app">
-      <iframe src="http://localhost:5173/mainpage.html" width="100%" height="100%" frameborder="0"
+      <iframe v-show="!isIndoor" src="http://localhost:5173/mainpage.html" width="100%" height="100%" frameborder="0"
         allowfullscreen></iframe>
     </div>
     <div class="HeaderWrapper">
@@ -30,6 +30,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import detailPage from "../components/DetailPage.vue";
 import { RouterLink, RouterView } from "vue-router";
 import { useRouter } from "vue-router";
+import emitter from '@/eventBus';
 export default {
   name: "MainPage",
   setup() {
@@ -51,11 +52,15 @@ export default {
       const intervalId = setInterval(updateTime, 1000); // 每秒更新
       updateDate();
       toOverview();
+      emitter.on('toindoor', toIndoor);
     });
     // 清理定时器
     onUnmounted(() => {
       clearInterval(intervalId);
+      emitter.off('toindoor', toIndoor);
     });
+
+    let isIndoor = ref(false)
 
     //路由
     const router = useRouter();
@@ -82,12 +87,25 @@ export default {
       activeModule.value = module; // 更新 activeIndex
       toPath(module);
     };
+
+
+
+    const toIndoor = (payload) => {
+      this.isIndoor.value = true
+
+    };
+    const toOutdoor = () => {
+      this.isIndoor.value = false
+    };
     return {
       currentTime,
       currentDate,
       modules,
       activeModule,
-      setActive
+      setActive,
+      isIndoor,
+      toIndoor,
+      toOutdoor
     };
   },
   components: { detailPage }
@@ -96,9 +114,10 @@ export default {
 
 <style scoped>
 @import url("src/assets/fonts/index.css");
-.app{
-  width:100%;
-  height:100%;
+
+.app {
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
