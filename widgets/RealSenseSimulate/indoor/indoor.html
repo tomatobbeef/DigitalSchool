@@ -164,9 +164,14 @@
       进入
     </button>
     <script type="module">
-      import emitter from "../../../src/eventBus.js";
       function enter() {
-        emitter.emit("toindoor", "Hello from external JS");
+        console.log('执行')
+        window.dispatchEvent(new Event('callComponentMethod'));
+        // 确保组件已加载
+        if (window.mainpage) {
+          console.log('执行了')
+          window.mainpage.toIndoor();
+        }
       }
       document.getElementById("sr").addEventListener("click", enter);
     </script>

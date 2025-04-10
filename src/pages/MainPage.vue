@@ -26,11 +26,10 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted} from "vue";
 import detailPage from "../components/DetailPage.vue";
 import { RouterLink, RouterView } from "vue-router";
 import { useRouter } from "vue-router";
-import emitter from '@/eventBus';
 export default {
   name: "MainPage",
   setup() {
@@ -52,12 +51,14 @@ export default {
       const intervalId = setInterval(updateTime, 1000); // 每秒更新
       updateDate();
       toOverview();
-      emitter.on('toindoor', toIndoor);
+      window.mainpage = this; // 将实例挂载到 window
+      window.addEventListener('callComponentMethod', this.toIndoor);
     });
     // 清理定时器
     onUnmounted(() => {
       clearInterval(intervalId);
-      emitter.off('toindoor', toIndoor);
+      window.mainpage = null; 
+      window.removeEventListener('callComponentMethod', this.toIndoor);
     });
 
     let isIndoor = ref(false)
