@@ -3,7 +3,7 @@
     <div class="right-wrapper">
       <div class="right-content">
         <div class="museum-overview">
-          <div class="title">博物馆简介</div>
+          <div class="title">场馆简介</div>
           <div class="content">
             <div
               style="text-indent: 2em;"

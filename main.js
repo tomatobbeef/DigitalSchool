@@ -39,6 +39,11 @@ function kpr(event){
     console.log(event);
 }
 
+//穿透室内
+function toindoor(){
+    window.parent.toIndoor();
+}
+
 
 //加载3DTile数据
 function add3DTile() {

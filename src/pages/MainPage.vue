@@ -1,9 +1,11 @@
 <template>
   <div class="MainBox">
-
+    
+    
+    <detailPage v-show="isIndoor" style="position:absolute"></detailPage>
     <router-view v-show="isIndoor"></router-view>
     <div class="app">
-      <iframe v-show="!isIndoor" src="http://localhost:5173/mainpage.html" width="100%" height="100%" frameborder="0"
+      <iframe v-show="!isIndoor" style="position:absolute" src="http://localhost:5173/mainpage.html" width="100%" height="100%" frameborder="0"
         allowfullscreen></iframe>
     </div>
     <div class="HeaderWrapper">
@@ -26,7 +28,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted} from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import detailPage from "../components/DetailPage.vue";
 import { RouterLink, RouterView } from "vue-router";
 import { useRouter } from "vue-router";
@@ -35,6 +37,7 @@ export default {
   setup() {
     const currentTime = ref("");
     const currentDate = ref("");
+    const isIndoor = ref(false)
     // 更新当前时间的函数
     const updateTime = () => {
       const now = new Date();
@@ -51,17 +54,18 @@ export default {
       const intervalId = setInterval(updateTime, 1000); // 每秒更新
       updateDate();
       toOverview();
-      window.mainpage = this; // 将实例挂载到 window
-      window.addEventListener('callComponentMethod', this.toIndoor);
+      window.toIndoor = () => {
+        console.log('toIndoor function called');
+        isIndoor.value = true
+      };
     });
     // 清理定时器
     onUnmounted(() => {
       clearInterval(intervalId);
-      window.mainpage = null; 
-      window.removeEventListener('callComponentMethod', this.toIndoor);
+      window.toIndoor = null;
     });
 
-    let isIndoor = ref(false)
+    
 
     //路由
     const router = useRouter();
@@ -91,7 +95,7 @@ export default {
 
 
 
-    const toIndoor = (payload) => {
+    const toIndoor = () => {
       this.isIndoor.value = true
 
     };

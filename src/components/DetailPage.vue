@@ -1441,8 +1441,8 @@ onMounted(() => {
 
   // 定义一个让Canvas全屏的函数
   const setCanvasFullScreen = () => {
-    canvas.width = window.innerWidth * 0.993; // 设置画布宽度为窗口宽度
-    canvas.height = window.innerHeight * 0.993; // 设置画布高度为窗口高度
+    canvas.width = window.innerWidth * 0.999; // 设置画布宽度为窗口宽度
+    canvas.height = window.innerHeight * 0.999; // 设置画布高度为窗口高度
     // 这里你还可以根据全屏尺寸重新初始化游戏元素，比如砖块位置、球的速度等
   };
 
@@ -1471,13 +1471,16 @@ onMounted(() => {
   <!-- <el-card class="text-card">
         中国地质大学逸夫博物馆是国家二级博物馆，是首家被认定为国家AAAA级旅游景区的高校博物馆，是全国中小学生研学实践教育基地、全国科普教育基地、全国青少年科技教育基地、全国古生物教育基地、全国中小学环境教育社会实践基地、全国国土资源科普基地、2017武汉十大博物馆、武汉市爱国主义教育基地。
   </el-card>-->
-  <div>
+  <div class="app">
     <!-- <map2d /> -->
-    <canvas id="canvas" style="border:0px solid #000;"></canvas>
+    <canvas id="canvas"></canvas>
   </div>
 </template>
 
 <style scoped>
+.app{
+  overflow: hidden;
+}
 .model-card {
   position: absolute;
   left: 5vw;
