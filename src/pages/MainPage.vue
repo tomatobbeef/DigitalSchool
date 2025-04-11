@@ -23,7 +23,7 @@
         </div>
       </div>
     </div>
-
+    <el-button v-show="isIndoor" class="transparent-button" style="position:absolute;bottom:20px;left:20px" @click="toOutdoor">返回</el-button>
   </div>
 </template>
 
@@ -96,11 +96,11 @@ export default {
 
 
     const toIndoor = () => {
-      this.isIndoor.value = true
+      isIndoor.value = true
 
     };
     const toOutdoor = () => {
-      this.isIndoor.value = false
+      isIndoor.value = false
     };
     return {
       currentTime,
@@ -229,5 +229,24 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   /* 背景图片居中 */
+}
+
+/* 自定义透明按钮样式 */
+.transparent-button {
+  background-color: rgba(255, 255, 255, 0.5); /* 半透明背景 */
+  border: 1px solid rgba(0, 0, 0, 0.2); /* 半透明边框 */
+  color: #000; /* 文字颜色 */
+}
+
+/* 鼠标悬停时的样式 */
+.transparent-button:hover {
+  background-color: rgba(255, 255, 255, 0.8); /* 更深的透明背景 */
+  border: 1px solid rgba(0, 0, 0, 0.3); /* 更深的透明边框 */
+}
+
+/* 按钮激活时的样式 */
+.transparent-button:active {
+  background-color: rgba(255, 255, 255, 1); /* 完全不透明背景 */
+  border: 1px solid rgba(0, 0, 0, 0.4); /* 更深的透明边框 */
 }
 </style>
