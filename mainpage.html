@@ -102,40 +102,6 @@
 
         <!-- head -->
         <div class="head" :class="headBool?'head-active':''">
-            <!-- <div class="head-bg"><img src="./images/bg_1.png" alt=""></div>
-        <div class="head-bg-left"><img src="./images/bg_l.png" alt=""></div>
-        <div class="head-bg-right"><img src="./images/bg_r.png" alt=""></div>
-        <div class="head-bg-l-l"><img src="./images/bg_l_l.png" alt=""></div>
-        <div class="head-bg-r-r"><img src="./images/bg_r_r.png" alt=""></div>
-        <div class="head-text">
-          <p style="margin-top: 0px;font-size:45px">数字孪生校园2.0</p>
-          <p style="margin-top: 0px;">Digital Twin School</p>
-        </div>
-        <div class="head-cont-l" style="color:#00FFE4;">
-            <div>{{dateHour}}:{{dateMinu}}:{{dateSec}}</div>
-            <div>
-                <span style="font-size: 1vw;font-weight: 600;">{{dateWeek}}</span>
-                <span style="font-size: 1vw;">{{dateYear}}年{{dateMonth}}月{{dateDate}}日</span>
-            </div>
-        </div>
-        <div class="head-cont-r">
-            <div><img src="./images/duoyun.png" alt=""></div>
-            <div style="font-size: 1vw;font-weight: 600;color:#00FFE4;">多云 5℃-17℃</div>
-        </div> -->
-            <!-- 切换地图 -->
-            <!--<div class="switch-map">
-            <span class="span1" @click="mapSwitch = !mapSwitch">{{mapSwitch?'2D':'3D'}}</span
-            <span class="span2" @click="mapAuto = !mapAuto" style="font-size: 1vw;font-weight: 600;">自动({{mapAuto?'开':'关'}})</span>
-        </div>>-->
-            <!--<<div class="switch-map_R">
-            <span id="videoFusion" class="span2" @click="videoFusion" style="font-size: 1vw;font-weight: 600;">停车场(开)</span>
-        </div>-->
-            <!--<div class="switch-map_R">
-            <span id="videoFusion" class="span2" @click="switchon" style="font-size: 1vw;font-weight: 600;">显示/隐藏</span>
-        </div>-->
-        </div>
-        <!-- <iframe id="newht" src="" frameborder="no" style="opacity: 0.8;position: absolute;right: -18%;width: 18%;top: 12%;height: 80%;border-style: solid;background-color: #262e46;border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe> -->
-        <!-- <iframe id="myFrame" class="ifra" src=""  style="display: none;" frameborder="no" ></iframe> -->
         <div class="custom-iframe-container" :class="{ 'fly-in': iframeVisible, 'fly-out': !iframeVisible }">
             <iframe id="myFrame" v-if="iframeVisible" :src="iframeSrc" style="border: none;"></iframe>
         </div>
@@ -143,7 +109,6 @@
             <div class="popup-content">
                 <iframe id="newht" :src="externalUrl" frameborder="0" width="100%" height="100%"
                     style="border-style: solid;background:linear-gradient(to right, rgba(011, 21, 44, 0.4), rgba(11, 21, 44, 0.9));border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe>
-                <!-- <button @click="closePopup">&nbspX&nbsp</button> -->
             </div>
         </div>
 
@@ -154,26 +119,6 @@
                 <div><img src="./images/mianji.png" alt=""></div>
                 <div>图层管理</div>
             </div>
-
-            <!-- <div @click="openPopup('widgets/RealSenseSimulate/view.html')" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
-              <div><img src="./images/jiedaoquyu.png" alt=""></div>
-              <div>2D2</div>
-          </div>
-
-          <div @click="openPopup('widgets/Statistics/view.html')" :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
-              <div><img src="./images/shujudaping.png" alt=""></div>
-              <div>2D3</div>
-          </div>
-
-          <div @click="openPopup('widgets/two-dimension/view.html')" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
-               <div><img src="./images/cheliangguanli.png" alt=""></div>
-              <div>2D4</div>
-          </div>
-
-          <div @click="openPopup('widgets/DigitalUniversity/view.html')" :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
-               <div><img src="./images/jingdian.png" alt=""></div>
-               <div>2D5</div>
-          </div>  -->
         </div>
 
         <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!"
@@ -229,27 +174,8 @@
                 <div><img src="./images/jiedaoquyu.png" alt=""></div>
                 <div>孪生校园</div>
             </div>
-            <!-- 
-        <div @click="openPopup('widgets/Statistics/view.html')" :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
-            <div><img src="./images/shujudaping.png" alt=""></div>
-            <div>3D3</div>
-        </div>
 
-        <div @click="openPopup('widgets/two-dimension/view.html')" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
-             <div><img src="./images/cheliangguanli.png" alt=""></div>
-            <div>3D4</div>
         </div>
-
-        <div @click="openPopup('widgets/DigitalUniversity/view.html')" :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
-             <div><img src="./images/jingdian.png" alt=""></div>
-             <div>3D5</div>
-        </div>  -->
-        </div>
-        <!-- map容器 -->
-        <!-- <div id="cesiumContainer" v-show="!mapSwitch"></div>
-      <div id="heatMap" style="position: absolute;z-index: -1;" v-show="true" ></div>
-
-      <div id="cesiumContainer2D" :class="{ 'move-in': isMapVisible, 'move-out': !isMapVisible }"><button id="dmapbutton" @click="xdtxs()">+</button></div> -->
 
 
         <div id="container">

@@ -64,9 +64,6 @@ export default {
       clearInterval(intervalId);
       window.toIndoor = null;
     });
-
-    
-
     //路由
     const router = useRouter();
     function toOverview() {
