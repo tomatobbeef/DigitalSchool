@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <script include="vue,d3,proj4,geohash,geojson,shapefile,turf,mapv,echarts,elasticsearch,plugin,vue,antd"
-        src="./mapgis/include-lib-local.js"></script>
+  <head>
+    <script include="vue,d3,proj4,geohash,geojson,shapefile,turf,mapv,echarts,elasticsearch,plugin,vue,antd" src="./mapgis/include-lib-local.js"></script>
     <script include="openlayers" src="./mapgis/include-openlayers-local.js"></script>
     <script src="tool.js"></script>
     <script src="layui.js"></script>
     <script src="sqlite\worker.sql-asm.js"></script>
-
-
+    
+    
     <!-- <script src="libmars/CesiumPlugins/heatmap/heatmap.min.js"></script> -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,8 +61,7 @@
             include="jquery,jquery.range,bootstrap,bootstrap-checkbox,font-awesome,web-icons,layer,haoutil,nprogress,toastr,turf"></script>-->
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport"
-        content="width=device-width,initial-scale=1,user-scalable=0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-touch-fullscreen" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -87,149 +84,202 @@
             display: none;
         }
     </style>
-
-</head>
-
-<body>
+    
+  </head>
+  <body>
     <div id="app" v-cloak>
-        <!-- 初始化页面 -->
-        <div class="init" v-if="initBool">
-            <div>
-                <button class="btn" @click="clickAccess">走进智慧校园</button>
-                <em></em>
-            </div>
-        </div>
+      <!-- 初始化页面 -->
+      <div class="init" v-if="initBool">
+          <div>
+              <button class="btn" @click="clickAccess">走进智慧校园</button>
+              <em></em>
+          </div>
+      </div>
 
-        <!-- head -->
-        <div class="head" :class="headBool?'head-active':''">
+      <!-- head -->
+      <div class="head" :class="headBool?'head-active':''">
+          <div class="head-bg"><img src="./images/bg_1.png" alt=""></div>
+          <div class="head-bg-left"><img src="./images/bg_l.png" alt=""></div>
+          <div class="head-bg-right"><img src="./images/bg_r.png" alt=""></div>
+          <div class="head-bg-l-l"><img src="./images/bg_l_l.png" alt=""></div>
+          <div class="head-bg-r-r"><img src="./images/bg_r_r.png" alt=""></div>
+          <div class="head-text">
+            <p style="margin-top: 0px;font-size:45px">数字孪生校园2.0</p>
+            <p style="margin-top: 0px;">Digital Twin School</p>
+          </div>
+          <div class="head-cont-l" style="color:#00FFE4;">
+              <div>{{dateHour}}:{{dateMinu}}:{{dateSec}}</div>
+              <div>
+                  <span style="font-size: 1vw;font-weight: 600;">{{dateWeek}}</span>
+                  <span style="font-size: 1vw;">{{dateYear}}年{{dateMonth}}月{{dateDate}}日</span>
+              </div>
+          </div>
+          <div class="head-cont-r">
+              <div><img src="./images/duoyun.png" alt=""></div>
+              <div style="font-size: 1vw;font-weight: 600;color:#00FFE4;">多云 5℃-17℃</div>
+          </div>
+          <!-- 切换地图 -->
+          <!--<div class="switch-map">
+              <span class="span1" @click="mapSwitch = !mapSwitch">{{mapSwitch?'2D':'3D'}}</span
+              <span class="span2" @click="mapAuto = !mapAuto" style="font-size: 1vw;font-weight: 600;">自动({{mapAuto?'开':'关'}})</span>
+          </div>>-->
+          <!--<<div class="switch-map_R">
+              <span id="videoFusion" class="span2" @click="videoFusion" style="font-size: 1vw;font-weight: 600;">停车场(开)</span>
+          </div>-->
+          <!--<div class="switch-map_R">
+              <span id="videoFusion" class="span2" @click="switchon" style="font-size: 1vw;font-weight: 600;">显示/隐藏</span>
+          </div>-->
+      </div>
+      <!-- <iframe id="newht" src="" frameborder="no" style="opacity: 0.8;position: absolute;right: -18%;width: 18%;top: 12%;height: 80%;border-style: solid;background-color: #262e46;border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe> -->
+      <!-- <iframe id="myFrame" class="ifra" src=""  style="display: none;" frameborder="no" ></iframe> -->
         <div class="custom-iframe-container" :class="{ 'fly-in': iframeVisible, 'fly-out': !iframeVisible }">
-            <iframe id="myFrame" v-if="iframeVisible" :src="iframeSrc" style="border: none;"></iframe>
+            <iframe id="myFrame"  v-if="iframeVisible" :src="iframeSrc" style="border: none;"></iframe>
         </div>
-        <div :class="{ 'slide-in': isOpen }" class="popup-container">
-            <div class="popup-content">
-                <iframe id="newht" :src="externalUrl" frameborder="0" width="100%" height="100%"
-                    style="border-style: solid;background:linear-gradient(to right, rgba(011, 21, 44, 0.4), rgba(11, 21, 44, 0.9));border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe>
-            </div>
+      <div :class="{ 'slide-in': isOpen }" class="popup-container">
+        <div class="popup-content">
+          <iframe id="newht" :src="externalUrl" frameborder="0" width="100%" height="100%" style="border-style: solid;background:linear-gradient(to right, rgba(011, 21, 44, 0.4), rgba(11, 21, 44, 0.9));border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe>
+          <!-- <button @click="closePopup">&nbspX&nbsp</button> -->
         </div>
+      </div>
 
-        <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!"
-            v-show="(!mapSwitch)&&switchstatues == 2">
-            <div @click="openPopup('widgets/tucengguanli/view.html')"
-                :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/mianji.png" alt=""></div>
-                <div>图层管理</div>
-            </div>
-        </div>
+      <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!" v-show="(!mapSwitch)&&switchstatues == 2">
+          <div @click="openPopup('widgets/tucengguanli/view.html')" :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/mianji.png" alt=""></div>
+              <div>图层管理</div>
+          </div> 
+          
+          <!-- <div @click="openPopup('widgets/RealSenseSimulate/view.html')" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/jiedaoquyu.png" alt=""></div>
+              <div>2D2</div>
+          </div>
 
-        <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!"
-            v-show="(!mapSwitch)&&switchstatues == 0">
-            <div @click="openPopup('widgets/measure/view.html')"
-                :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/mianji.png" alt=""></div>
-                <div>量测工具</div>
-            </div>
+          <div @click="openPopup('widgets/Statistics/view.html')" :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/shujudaping.png" alt=""></div>
+              <div>2D3</div>
+          </div>
 
-            <div @click="openPopup('widgets/RealSenseSimulate/view.html')"
-                :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/jiedaoquyu.png" alt=""></div>
-                <div>孪生校园</div>
-            </div>
+          <div @click="openPopup('widgets/two-dimension/view.html')" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
+               <div><img src="./images/cheliangguanli.png" alt=""></div>
+              <div>2D4</div>
+          </div>
 
-            <div @click="openPopup('widgets/Statistics/view.html')"
-                :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/shujudaping.png" alt=""></div>
-                <div>信息统计</div>
-            </div>
+          <div @click="openPopup('widgets/DigitalUniversity/view.html')" :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
+               <div><img src="./images/jingdian.png" alt=""></div>
+               <div>2D5</div>
+          </div>  -->
+      </div> 
 
-            <div @click="changethree()" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/cheliangguanli.png" alt=""></div>
-                <div>实时模型分析</div>
-            </div>
+      <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!" v-show="(!mapSwitch)&&switchstatues == 0">
+          <div @click="openPopup('widgets/measure/view.html')" :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/mianji.png" alt=""></div>
+              <div>量测工具</div>
+          </div> 
+          
+          <div @click="openPopup('widgets/RealSenseSimulate/view.html')" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/jiedaoquyu.png" alt=""></div>
+              <div>孪生校园</div>
+          </div>
 
-            <!-- <div @click="roadpath()" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
+          <div @click="openPopup('widgets/Statistics/view.html')" :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
+              <div><img src="./images/shujudaping.png" alt=""></div>
+              <div>信息统计</div>
+          </div>
+
+          <div @click="changethree()" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
+               <div><img src="./images/cheliangguanli.png" alt=""></div>
+              <div>实时模型分析</div>
+          </div>
+
+          <!-- <div @click="roadpath()" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
                <div><img src="./images/cheliangguanli.png" alt=""></div>
               <div>实时模型分析</div>
           </div> -->
 
-            <div @click="openPopup('widgets/DigitalUniversity/view.html')"
-                :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/jingdian.png" alt=""></div>
-                <div>查询分析工具</div>
-            </div>
+          <div @click="openPopup('widgets/DigitalUniversity/view.html')" :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
+               <div><img src="./images/jingdian.png" alt=""></div>
+               <div>查询分析工具</div>
+          </div> 
+      </div> 
+
+      <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!" v-show="(!mapSwitch)&&switchstatues == 1">
+        <div @click="fetchAndConvertGeoms()" :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
+            <div><img src="./images/mianji.png" alt=""></div>
+            <div>模型同步</div>
+        </div> 
+        
+        <div @click="convertAndAddPolylines()" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
+            <div><img src="./images/jiedaoquyu.png" alt=""></div>
+            <div>路径同步</div>
+        </div>
+        <div @click="openPopup('widgets/RealSenseSimulate/view.html')" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
+            <div><img src="./images/jiedaoquyu.png" alt=""></div>
+            <div>孪生校园</div>
+        </div>
+<!-- 
+        <div @click="openPopup('widgets/Statistics/view.html')" :class="navState.indexOf('信息统计')!=-1?'nav-bottom-box-item-act':''">
+            <div><img src="./images/shujudaping.png" alt=""></div>
+            <div>3D3</div>
         </div>
 
-        <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!"
-            v-show="(!mapSwitch)&&switchstatues == 1">
-            <div @click="fetchAndConvertGeoms()" :class="navState.indexOf('地图量测')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/mianji.png" alt=""></div>
-                <div>模型同步</div>
-            </div>
-
-            <div @click="convertAndAddPolylines()" :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/jiedaoquyu.png" alt=""></div>
-                <div>路径同步</div>
-            </div>
-            <div @click="openPopup('widgets/RealSenseSimulate/view.html')"
-                :class="navState.indexOf('校园实景')!=-1?'nav-bottom-box-item-act':''">
-                <div><img src="./images/jiedaoquyu.png" alt=""></div>
-                <div>孪生校园</div>
-            </div>
-
+        <div @click="openPopup('widgets/two-dimension/view.html')" :class="navState.indexOf('实景模拟')!=-1?'nav-bottom-box-item-act':''">
+             <div><img src="./images/cheliangguanli.png" alt=""></div>
+            <div>3D4</div>
         </div>
 
+        <div @click="openPopup('widgets/DigitalUniversity/view.html')" :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
+             <div><img src="./images/jingdian.png" alt=""></div>
+             <div>3D5</div>
+        </div>  -->
+    </div> 
+      <!-- map容器 -->
+      <!-- <div id="cesiumContainer" v-show="!mapSwitch"></div>
+      <div id="heatMap" style="position: absolute;z-index: -1;" v-show="true" ></div>
 
-        <div id="container">
-            <div id="mapt"
-                :style="{ width: '100%', height: '100%', position: 'absolute', top: '0px', left: '0px', zIndex: zIndex }"
-                v-show="threeshow">
-                <iframe id="tnewht" :src="threeshow ? 'widgets/tilescut/view.html' : 'about:blank'"
-                    style="position: absolute;left: 0%;top: 0%;width: 100%;height: 100%;"></iframe>
-            </div>
-            <div id="openlayersMap" :style="{ width: leftWidth }"></div>
-            <div id="buttonContainer">
-                <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
-                <button id="buttonright" @click="expandRight">&gt;&gt;</button>
-            </div>
-            <div id="three"></div>
-            <div id="cesiumMap" :style="{ width: rightWidth }"></div>
+      <div id="cesiumContainer2D" :class="{ 'move-in': isMapVisible, 'move-out': !isMapVisible }"><button id="dmapbutton" @click="xdtxs()">+</button></div> -->
+        
+      
+      <div id="container">
+        <div id="mapt" :style="{ width: '100%', height: '100%', position: 'absolute', top: '0px', left: '0px', zIndex: zIndex }" v-show="threeshow">
+            <iframe id="tnewht" :src="threeshow ? 'widgets/tilescut/view.html' : 'about:blank'" style="position: absolute;left: 0%;top: 0%;width: 100%;height: 100%;"></iframe>
         </div>
+        <div id="openlayersMap" :style="{ width: leftWidth }"></div>
+        <div id="buttonContainer">
+            <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
+            <button id="buttonright" @click="expandRight">&gt;&gt;</button>
+        </div>
+        <div id="cesiumMap" :style="{ width: rightWidth }"></div>
+      </div>
 
-        <!-- swiper图片预览模块 -->
-        <div class="swiper-box" v-if="swiperImgBool">
-            <div class="swiper-close-btn btn" @click="closeSwiperBox"
-                style="border: 1px solid #56FFFF;font-size: 1vw;font-weight: 600;">关闭</div>
-            <div class="swiper-container gallery-top">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide" v-for="(item,i) in swiperImgArr" :key="i"
-                        :style="`background-image:url(${item})`"></div>
-                </div>
-                <!-- Pagination -->
-                <div class="swiper-pagination"></div>
-                <!-- Arrows -->
-                <!-- <div class="swiper-button-next swiper-button-white"></div>
+      <!-- swiper图片预览模块 -->
+      <div class="swiper-box" v-if="swiperImgBool">
+          <div class="swiper-close-btn btn" @click="closeSwiperBox" style="border: 1px solid #56FFFF;font-size: 1vw;font-weight: 600;">关闭</div>
+          <div class="swiper-container gallery-top">
+              <div class="swiper-wrapper">
+                  <div class="swiper-slide" v-for="(item,i) in swiperImgArr" :key="i"
+                      :style="`background-image:url(${item})`"></div>
+              </div>
+              <!-- Pagination -->
+              <div class="swiper-pagination"></div>
+              <!-- Arrows -->
+              <!-- <div class="swiper-button-next swiper-button-white"></div>
               <div class="swiper-button-prev swiper-button-white"></div> -->
-            </div>
-        </div>
+          </div>
+      </div>
 
-        <!-- 地图气泡弹框 -->
-        <div class="dynamic-layer" id="one">
-            <div class='line'></div>
-            <!--
+      <!-- 地图气泡弹框 -->
+      <div class="dynamic-layer" id="one">
+          <div class='line'></div>
+          <!--
           <div class='main'>
               <div class="main_tit"></div>
               <div class="main_con"></div>
           </div>
           -->
-            <div class="main" id="tip"
-                style="position: absolute;left: -370px;top: -540px;transform: matrix(0.892196, 0, 0, 0.892196, 378.334, 287.318);transform-origin: left bottom 0px;width: 300px;height: 240px;border-radius: 4px;background: url('./img/div2.png') 0% 0% / 100% 100% no-repeat;animation: 5s ease 0s infinite normal none running mymove;display: block;">
-                <div class="main_tit"
-                    style="position: inherit;top: 38px;left: 80px;font-size: 14px;text-align: left;color: rgb(255, 255, 255);text-shadow: rgba(0, 0, 0, 0.75) 0px 0px 9px;">
-                </div>
-                <div class="main_con"
-                    style="position: inherit;font-size: 14px;top: 68px;left: 60px;width: 220px;text-align: left;color: rgb(255, 255, 255);">
-                </div>
-            </div>
-        </div>
+          <div class="main" id="tip" style="position: absolute;left: -370px;top: -540px;transform: matrix(0.892196, 0, 0, 0.892196, 378.334, 287.318);transform-origin: left bottom 0px;width: 300px;height: 240px;border-radius: 4px;background: url('./img/div2.png') 0% 0% / 100% 100% no-repeat;animation: 5s ease 0s infinite normal none running mymove;display: block;">
+              <div class="main_tit" style="position: inherit;top: 38px;left: 80px;font-size: 14px;text-align: left;color: rgb(255, 255, 255);text-shadow: rgba(0, 0, 0, 0.75) 0px 0px 9px;"></div>
+              <div class="main_con" style="position: inherit;font-size: 14px;top: 68px;left: 60px;width: 220px;text-align: left;color: rgb(255, 255, 255);"></div>
+          </div>
+      </div>
     </div>
     <div>
         <div>
@@ -241,11 +291,5 @@
     <!-- <script type="module" src="/src/main.ts"></script> -->
     <script src="main.vue"></script>
     <script type="module" src="./main.js"></script>
-    <script>
-        function toindoor() {
-            window.parent.toIndoor();
-        }
-    </script>
-</body>
-
+  </body>
 </html>
