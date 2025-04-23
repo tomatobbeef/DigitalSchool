@@ -40,7 +40,7 @@ secondForm.addEventListener("submit", (e) => {
   console.log("user:",user)
   console.log("pass:",pass)
   if (username === "dida2024" && password === "12345678") {
-    window.location.href = "index.html";
+    window.location.href = "home.html";
   }
   else if(username === user && password === pass){
     window.location.href = "index.html";

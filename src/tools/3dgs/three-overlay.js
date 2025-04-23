@@ -1,16 +1,9 @@
 import * as Cesium from "cesium";
 import * as THREE from "three";
-
 import { GaussianSplatLayer } from "./gaussian-splat-layer";
 
 export class ThreeOverlay {
-  private cesiumCamera: Cesium.Camera;
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  private threeRenderer: THREE.WebGLRenderer;
-  private gausssianSplatLayers: GaussianSplatLayer[];
-
-  constructor(cesiumCamera: Cesium.Camera) {
+  constructor(cesiumCamera) {
     const threeContainer = document.getElementById("three");
     this.cesiumCamera = cesiumCamera;
     this.scene = new THREE.Scene();
@@ -23,11 +16,13 @@ export class ThreeOverlay {
     this.threeRenderer = new THREE.WebGLRenderer({ alpha: true });
     this.threeRenderer.setSize(window.innerWidth, window.innerHeight);
     this.gausssianSplatLayers = [];
-    threeContainer?.appendChild(this.threeRenderer.domElement);
+    if (threeContainer) {
+      threeContainer.appendChild(this.threeRenderer.domElement);
+    }
     this.sizeChange();
   }
 
-  private sizeChange() {
+  sizeChange() {
     window.addEventListener("resize", () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -38,14 +33,13 @@ export class ThreeOverlay {
     });
   }
 
-  public addGaussianSplatLayer(layer: GaussianSplatLayer) {
+  addGaussianSplatLayer(layer) {
     layer.setup(this.camera, this.threeRenderer);
     this.scene.add(layer.scene);
     this.gausssianSplatLayers.push(layer);
   }
 
-  // Sync camera code taken from https://github.com/leon-juenemann/cesiumjs-with-threejs
-  public render() {
+  render() {
     this.camera.fov = Cesium.Math.toDegrees(this.cesiumCamera.frustum.fovy);
     this.camera.updateProjectionMatrix();
 

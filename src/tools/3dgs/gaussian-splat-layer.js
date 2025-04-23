@@ -3,20 +3,7 @@ import * as THREE from "three";
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 
 export class GaussianSplatLayer {
-  public scene!: THREE.Scene;
-  public splatViewer: GaussianSplats3D.Viewer;
-  public ready: boolean;
-  private model: string;
-  private location: { lon: number; lat: number; height: number };
-  private rotation: { x: number; y: number; z: number };
-  private scale: number;
-
-  constructor(
-    model: string,
-    location: { lon: number; lat: number; height: number },
-    rotation: { x: number; y: number; z: number },
-    initialScale: number = 1
-  ) {
+  constructor(model, location, rotation, initialScale = 1) {
     this.ready = false;
     this.model = model;
     this.location = location;
@@ -28,7 +15,7 @@ export class GaussianSplatLayer {
     });
   }
 
-  private adjustScene(event: KeyboardEvent) {
+  adjustScene(event) {
     switch (event.key) {
       case "q":
         this.scene.rotateY(0.005);
@@ -98,7 +85,7 @@ export class GaussianSplatLayer {
     );
   }
 
-  private updatePosition() {
+  updatePosition() {
     const position = Cesium.Cartesian3.fromDegrees(
       this.location.lon,
       this.location.lat,
@@ -107,14 +94,14 @@ export class GaussianSplatLayer {
     this.scene.position.set(position.x, position.y, position.z);
   }
 
-  private updateScale() {
+  updateScale() {
     if (this.splatViewer.getSplatMesh()) {
       const mesh = this.splatViewer.getSplatMesh();
       mesh.scale.set(this.scale, this.scale, this.scale);
     }
   }
 
-  public setup(camera: THREE.Camera, renderer: THREE.Renderer) {
+  setup(camera, renderer) {
     const position = Cesium.Cartesian3.fromDegrees(
       this.location.lon,
       this.location.lat,
@@ -132,10 +119,6 @@ export class GaussianSplatLayer {
       renderer: renderer,
     });
 
-    // create parent scene and place at given position
-    // placing the splat scene directly at a world location
-    // results in jittering and inconsistent gaussian positions
-    // due to too large numbers
     this.scene = new THREE.Scene();
     this.scene.position.set(position.x, position.y, position.z);
     this.scene.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z);
