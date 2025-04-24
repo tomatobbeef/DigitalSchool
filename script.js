@@ -43,7 +43,7 @@ secondForm.addEventListener("submit", (e) => {
     window.location.href = "home.html";
   }
   else if(username === user && password === pass){
-    window.location.href = "index.html";
+    window.location.href = "home.html";
   } 
   else {
     alert("密码错误");

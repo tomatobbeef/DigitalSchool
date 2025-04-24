@@ -102,6 +102,7 @@ export class GaussianSplatLayer {
   }
 
   setup(camera, renderer) {
+    
     const position = Cesium.Cartesian3.fromDegrees(
       this.location.lon,
       this.location.lat,
@@ -125,8 +126,8 @@ export class GaussianSplatLayer {
 
     this.splatViewer
       .addSplatScene(this.model, {
-        showLoadingUI: false,
-        progressiveLoad: false,
+        showLoadingUI: true,
+        progressiveLoad: true,
         rotation: [0, 0, 0],
         scale: [1, 1, 1],
       })
@@ -136,5 +137,6 @@ export class GaussianSplatLayer {
         this.scene.add(mesh);
         this.ready = true;
       });
+      console.log('高斯模型加载完毕')
   }
 }

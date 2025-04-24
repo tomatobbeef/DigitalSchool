@@ -2,6 +2,7 @@ import * as Cesium from "cesium";
 import { ThreeOverlay } from "./three-overlay";
 import { GaussianSplatLayer } from "./gaussian-splat-layer";
 
+
 export class Viewer {
   constructor() {
     this.createViewer();

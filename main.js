@@ -4,6 +4,8 @@
 // const { types } = require("util")
 
 // const { Cesium3DTile } = require("./mapgis/cdn/cesium/Cesium")
+import { GaussianSplatLayer } from "./src/tools/3dgs/gaussian-splat-layer.js";
+import { ThreeOverlay } from "./src/tools/3dgs/three-overlay.js";
 
 var viewer               // [ Object, 地图对象 ]
 var viewer2d               // [ Object, 地图对象 ]
@@ -11,36 +13,37 @@ let nowI = Date.now()               // [ Number, 当前时间戳-毫秒级 ]
 var canvas = null                   // [ Object, canvas对象 ]
 var ctx = null                      // [ Object, canvas上下文 ]
 var videoElement = null
-var pnum=0
+var pnum = 0
 var nt;
-var pnumel=0;
-var moveRate=5;
+var pnumel = 0;
+var moveRate = 5;
 var camera;
 var scene;
 var zizhuan;
-var fixedHeight=500;
-let cameraPointEntity = null; 
-var layer
-function peo(){
-    pnumel=document.getElementById("people");
-    pnum+=Math.floor(Math.random() * 11)-5;
-    pnumel.innerHTML=String(pnum)+"人";
-    nt=(Math.floor(Math.random() * 7)+1)*1000;
-    setTimeout(peo,nt);
+var fixedHeight = 500;
+let cameraPointEntity = null;
+var layer;
+var threeOverlay;
+function peo() {
+    pnumel = document.getElementById("people");
+    pnum += Math.floor(Math.random() * 11) - 5;
+    pnumel.innerHTML = String(pnum) + "人";
+    nt = (Math.floor(Math.random() * 7) + 1) * 1000;
+    setTimeout(peo, nt);
 }
 let SQLk;
 let map, sceneView;
-window.txdjs=0;
+window.txdjs = 0;
 
 
 //按键事件
-function kpr(event){
+function kpr(event) {
     console.log("按下按键");
     console.log(event);
 }
 
 //穿透室内
-function toindoor(){
+function toindoor() {
     window.parent.toIndoor();
 }
 
@@ -57,10 +60,10 @@ function add3DTile() {
     map.add([Cesium3DTilesCacheLayer]);*/
 }
 
-  function initViewer() {
+function initViewer() {
     //初始化图层管理容器
     //map = new Zondy.Map();
-    map=new CesiumZondy.Manager.CommonDataManager;
+    map = new CesiumZondy.Manager.CommonDataManager;
     //初始化地图视图对象
     console.log(Zondy);
     /*sceneView = new Zondy.SceneView({
@@ -69,10 +72,10 @@ function add3DTile() {
       //图层管理容器
       map: map
     });*/
-  }
+}
 
-  //地图初始化函数
-  function init() {
+//地图初始化函数
+function init() {
     //初始化球体
     initViewer();
     // 加载3DTile数据
@@ -86,36 +89,15 @@ function add3DTile() {
     let tileset2 = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
         url: '/zjl/Data/3Dtiles/cesiumosgb/tileset.json',
     }))*/
-    
-    console.log('t1:',tileset1);
-    console.log('t2:',tileset2);
+
+    console.log('t1:', tileset1);
+    console.log('t2:', tileset2);
     //var translation=Cesium.Cartesian3.fromArray([0, 0, -58]);
     //var m= Cesium.Matrix4.fromTranslation(translation);
 
     //生效
     //tileset2._modelMatrix = m;
-  }
-
-// const appk = new Vue({
-//     data: {
-//         iframeVisible: false,
-//         iframeSrc: '',
-    
-//     },
-//     methods: {
-//         toggleIframe(e) {
-//             console.log('目标url:',e);
-//             this.iframeVisible = !this.iframeVisible;
-//             if (this.iframeVisible) {
-//             // 设置 iframe 的 src
-//             this.iframeSrc = e; // 设置默认页面
-//             }
-//         },
-//         closeIframe() {
-//             this.iframeVisible = false;
-//         },
-//     }
-// });
+}
 
 // 在需要使用的页面中导入该 Vue 实例
 
@@ -138,7 +120,7 @@ let app = new Vue({
         alertboxBool: false,        // [ Bool ,  搜索弹框-显示隐藏 ]
 
         noBoxBool: false,           // [ Bool ,  未识别弹框-显示隐藏 ]
-        
+
         tooltipBool: false,          // [ Bool ,  tooltip工具按钮 ]
         tooltipAlertBool: false,     // [ Bool ,  tooltip弹框显示隐藏 ]
         canvasImages: '',             // [ String, tooltip弹层canvas转base64字符串 ]
@@ -170,7 +152,7 @@ let app = new Vue({
         mapAuto: true,                 // [ Bool , 自动播放 ] 
 
         //
-        videoFusionFlag:true,
+        videoFusionFlag: true,
         videoEntity: null,
 
         // new
@@ -186,13 +168,13 @@ let app = new Vue({
         openlayersMap: null,
         viewer: null,
         ttsw: 1,
-        switchstatues:1,
-        heatmapLayer:null,
-        layer:null,
-        showvectorSource:null,
-        showvectorLayer:null,
+        switchstatues: 1,
+        heatmapLayer: null,
+        layer: null,
+        showvectorSource: null,
+        showvectorLayer: null,
         wallEntities: [],
-        modelEntity:null,
+        modelEntity: null,
         placepoint: null, // 存放显示的点和文字的实体集合
         threeshow: false,
         zIndex: 2,
@@ -203,31 +185,31 @@ let app = new Vue({
         // therightWidth:"50%"
     },
     watch: {
-        mapAuto (n, o) {
+        mapAuto(n, o) {
             this.moveAnimation(n)
         },
         // nav搜索内容监听
-        selInp (n, o) {
+        selInp(n, o) {
             // nav搜索栏内容状态处理方法
             this.selNavState(n)
         },
         // 监听工具弹框显示隐藏
-        tooltipAlertBool (n, o) {
+        tooltipAlertBool(n, o) {
             if (n) {
                 this.checkboxChange()
             }
             this.scaleFun(n)
         },
         // 左侧弹框
-        alertboxBool (n, o) {
+        alertboxBool(n, o) {
             !this.alertboxBool && !this.vehicleBool ? this.initEchartsBool = true : this.initEchartsBool = false
         },
         // 右侧车辆&人员弹框
-        vehicleBool (n, o) {
+        vehicleBool(n, o) {
             !this.alertboxBool && !this.vehicleBool ? this.initEchartsBool = true : this.initEchartsBool = false
         },
         // 初始化图表块
-        initEchartsBool (n, o) {
+        initEchartsBool(n, o) {
             if (n) {
                 this.allCheck()
                 this.navState = ''
@@ -239,11 +221,11 @@ let app = new Vue({
     },
     filters: {
         // 去除str中html标签
-        removeHTML (value) {
+        removeHTML(value) {
             return value.replace(/<[^>]+>/g, "")
         },
         // 秒级时间戳转日期格式
-        formatDate (value) {
+        formatDate(value) {
             value *= 1000
             let now = new Date(value)
             let year = now.getFullYear()
@@ -336,7 +318,7 @@ let app = new Vue({
             return arr
         },
         // 文字展开收起-去除str中html标签
-        textOpenClose () {
+        textOpenClose() {
             return function (value, bool) {
                 let val = value
                 val = val.replace(/&nbsp;/g, "")
@@ -354,7 +336,7 @@ let app = new Vue({
             }
         },
         // 文字截取加点方法
-        textSubstr () {
+        textSubstr() {
             return function (value, length) {
                 let val = value
                 if (value == '' || value == undefined) {
@@ -367,7 +349,7 @@ let app = new Vue({
             }
         },
         // 单元住户详情-数组对象中是否有该值 返回bool
-        dataListIsValue () {
+        dataListIsValue() {
             return function (j, i) {
                 let dataList = this.houseUnitData
 
@@ -384,7 +366,7 @@ let app = new Vue({
             }
         },
         // 图片格式转换->字符串转数组 return数组第一项
-        imageTitleOne () {
+        imageTitleOne() {
             return function (str) {
                 let arr = imagesFun(str)
                 if (arr.length > 0) {
@@ -394,43 +376,43 @@ let app = new Vue({
             }
         }
     },
-    mounted () {
+    mounted() {
         this.openlayersMap = new ol.Map({
             target: 'openlayersMap',
             layers: [
                 //天地图影像
                 new ol.layer.Tile({
-                  title: "天地图影像",
-                  source: new ol.source.XYZ({
-                    url: "http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=efaed16e0051bf968bbbe8144bdcf97e",
-                  }),
-                  name: '天地图影像'
+                    title: "天地图影像",
+                    source: new ol.source.XYZ({
+                        url: "http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=efaed16e0051bf968bbbe8144bdcf97e",
+                    }),
+                    name: '天地图影像'
                 }),
                 //ArcGIS影像图层
                 new ol.layer.Tile({
-                  title: "ArcGIS影像图层",
-                  source: new ol.source.XYZ({
-                    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                  }),
-                  name: 'ArcGIS影像图层'
+                    title: "ArcGIS影像图层",
+                    source: new ol.source.XYZ({
+                        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                    }),
+                    name: 'ArcGIS影像图层'
                 }),
                 //天地图影像注记
                 new ol.layer.Tile({
-                  title: "天地图影像注记",
-                  source: new ol.source.XYZ({
-                    url: "http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=efaed16e0051bf968bbbe8144bdcf97e",
-                  }),
-                  name: '天地图影像注记'
+                    title: "天地图影像注记",
+                    source: new ol.source.XYZ({
+                        url: "http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=efaed16e0051bf968bbbe8144bdcf97e",
+                    }),
+                    name: '天地图影像注记'
                 }),
                 //校园地图
                 new ol.layer.Tile({
-                  title: "校园矢量",
-                  source: new ol.source.TileWMS({
-                    url: 'http://localhost:6163/igs/rest/mrms/tile/地大新校区/{level}/{row}/{col}',
-                  }),
-                  name: '校园矢量'
+                    title: "校园矢量",
+                    source: new ol.source.TileWMS({
+                        url: 'http://localhost:6163/igs/rest/mrms/tile/地大新校区/{level}/{row}/{col}',
+                    }),
+                    name: '校园矢量'
                 }),
-              ],
+            ],
             view: new ol.View({
                 center: ol.proj.fromLonLat([0, 0]),
                 zoom: 2,
@@ -454,7 +436,7 @@ let app = new Vue({
         // 创建一个图层用于显示摄像头位置和方向
         var cameraLayer = new ol.layer.Vector({
             source: new ol.source.Vector(),
-            style: function(feature) {
+            style: function (feature) {
                 // 获取摄像头位置和方向
                 var position = feature.getGeometry().getCoordinates();
                 var direction = feature.get('direction') || 0;
@@ -541,9 +523,9 @@ let app = new Vue({
         var lastUpdate = 0;
 
         // 在 Cesium 中监听摄像头位置和方向的变化，并更新在 OpenLayers 中显示的红点和箭头
-        viewer.camera.changed.addEventListener(function() {
+        viewer.camera.changed.addEventListener(function () {
             // 请求动画帧，确保在下一帧之后执行更新操作
-            requestAnimationFrame(function() {
+            requestAnimationFrame(function () {
                 // 获取当前时间戳
                 var now = Date.now();
 
@@ -590,60 +572,60 @@ let app = new Vue({
             });
         });
         // this.erdrefresh();
-        
+
         // window.parent.appk.sandrefresh();
 
     },
     methods: {
         moveAndZoomMap() {
-        // 修改为你想要的经纬度和高度
-        const destination = Cesium.Cartesian3.fromDegrees(-106.0, 40.0, 20000000.0);
-        
-        // 将地图移动到指定位置并放大
-        viewer.camera.flyTo({
-          destination: destination,
-          duration: 2, // 移动过程持续时间（秒）
-          complete: function() {
-            console.log('地图已移动到目标位置并放大。');
-          },
-          cancel: function() {
-            console.log('地图移动被取消。');
-          }
-        });
-      },
-      
+            // 修改为你想要的经纬度和高度
+            const destination = Cesium.Cartesian3.fromDegrees(-106.0, 40.0, 20000000.0);
+
+            // 将地图移动到指定位置并放大
+            viewer.camera.flyTo({
+                destination: destination,
+                duration: 2, // 移动过程持续时间（秒）
+                complete: function () {
+                    console.log('地图已移动到目标位置并放大。');
+                },
+                cancel: function () {
+                    console.log('地图移动被取消。');
+                }
+            });
+        },
+
         openMapWindow() {
-          this.showMapWindow = true;
-          // 将地图移动到屏幕中央并放大
-          viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(-106.0, 40.0, 20000000.0) // 修改为你想要的经纬度和高度
-          });
+            this.showMapWindow = true;
+            // 将地图移动到屏幕中央并放大
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(-106.0, 40.0, 20000000.0) // 修改为你想要的经纬度和高度
+            });
         },
         closeMapWindow() {
-          this.showMapWindow = false;
+            this.showMapWindow = false;
         },
         toggleIframe(e) {
             this.iframeVisible = !this.iframeVisible;
             console.log(e)
             if (this.iframeVisible) {
-            // 设置 iframe 的 src
-            this.iframeSrc = e; // 设置默认页面
+                // 设置 iframe 的 src
+                this.iframeSrc = e; // 设置默认页面
             }
         },
         closeIframe() {
             this.iframeVisible = false;
         },
-      openPopup(e) {
-        console.log("open");
-        console.log(e);
-        this.externalUrl=e;
-        this.isOpen = true;
-      },
-      closePopup() {
-        this.isOpen = false;
-      },
+        openPopup(e) {
+            console.log("open");
+            console.log(e);
+            this.externalUrl = e;
+            this.isOpen = true;
+        },
+        closePopup() {
+            this.isOpen = false;
+        },
         // 设置时间
-        dataSet () {
+        dataSet() {
             var now = new Date();
             var year = now.getFullYear(); //得到年份
             var month = now.getMonth();//得到月份
@@ -677,7 +659,7 @@ let app = new Vue({
             }, 1000)
         },
         // 绘制echarts
-        drawEcharts () {
+        drawEcharts() {
             // 游览路径矩阵
             this.juzhenCharts = echarts.init(this.$refs.juzhen)
             var profitOption = {
@@ -702,7 +684,7 @@ let app = new Vue({
                             color: 'rgba(0,46, 115, 0.3)'
                         }
                     },
-                    formatter: function(params) {
+                    formatter: function (params) {
                         // console.log(params)
                         var str = params[0].name + "<br>";
                         /*params.forEach(function(v, i) {
@@ -712,7 +694,7 @@ let app = new Vue({
                         str += params[0].seriesName + ": " + params[0].value + "人" + "<br>";
                         str += params[1].seriesName + ": " + params[1].value + "%" + "";
                         return str;
-    
+
                     }
                 },
                 legend: {
@@ -842,7 +824,7 @@ let app = new Vue({
                     },
                     data: [100, 80, 60, 90, 120],
                     zlevel: 9
-                },  {
+                }, {
                     name: '入住率',
                     type: 'line',
                     yAxisIndex: 1,
@@ -862,7 +844,7 @@ let app = new Vue({
                     zlevel: 9
                 }]
             };
-    
+
             var newOption = {
                 xAxis: {
                     data: ['经纬民宿', "青岚民宿", "木素民宿", "青年旅社", "创客公寓"]
@@ -1043,9 +1025,9 @@ let app = new Vue({
                             color: 'rgba(0,46, 115, 0.3)'
                         }
                     },
-                    formatter: function(params) {
+                    formatter: function (params) {
                         var str = params[0].name + "<br>";
-                        params.forEach(function(v, i) {
+                        params.forEach(function (v, i) {
                             str += v.value + "个" + "";
                         });
                         return str
@@ -1055,7 +1037,7 @@ let app = new Vue({
                     textStyle: {
                         fontSize: 10,
                         align: 'left',
-                        color: function(value, index) {
+                        color: function (value, index) {
                             return index >= 7 ? '#EDDE32' : '#6797D2';
                         }
                     }
@@ -1074,7 +1056,7 @@ let app = new Vue({
                     },
                     axisLabel: {
                         textStyle: {
-                            fontSize:  10,
+                            fontSize: 10,
                             color: '#00FFE4'
                         }
                     }
@@ -1094,7 +1076,7 @@ let app = new Vue({
                             position: 'right',
                             formatter: "{c}",
                             textStyle: {
-                                fontSize:  10,
+                                fontSize: 10,
                                 color: '#00FFE4'
                             }
                         }
@@ -1198,7 +1180,7 @@ let app = new Vue({
             })
         },
         // 车辆&人员管理 tab点击事件
-        tipsClickVehicle (bool) {
+        tipsClickVehicle(bool) {
             bool ? this.navState = '车辆管理' : this.navState = '人员管理'
             this.vePeBool = bool
 
@@ -1215,7 +1197,7 @@ let app = new Vue({
             this.vehicleBool = true
         },
         // 车辆&人员管理列表项搜索事件
-        handleClickSel () {
+        handleClickSel() {
             // 车辆 & 人员 列表page数据初始化
             this.vehicleItemBool = false
             this.vehicleCut = 1
@@ -1223,32 +1205,32 @@ let app = new Vue({
             this.vePeListSel(this.vePeBool)
         },
         // 车辆&人员 列表页数change
-        pageChange (val) {
+        pageChange(val) {
             this.vehicleCut = val
             // 车辆 & 人员 列表查询
             this.vePeListSel(this.vePeBool)
         },
         // 车辆&人员管理 弹框关闭事件
-        vehicleClose () {
+        vehicleClose() {
             this.vehicleBigBool = false
             this.vehicleBool = false
 
             this.vehicleItemBool = false
         },
         // 车辆&人员管理 弹框放大缩小
-        vehicleBigClick () {
+        vehicleBigClick() {
             this.vehicleBigBool ? this.vehicleBigBool = false : this.vehicleBigBool = true
         },
         // 车辆&人员 列表row点击事件
-        currentRowTable (currentRow, oldCurrentRow) {
+        currentRowTable(currentRow, oldCurrentRow) {
 
         },
         // 车辆&人员管理-列表点击弹出框关闭事件
-        vehicleItemClose () {
+        vehicleItemClose() {
             this.vehicleItemBool = false
         },
         // 车辆&人员管理-详情进入事件
-        vehicleInfoBtn () {
+        vehicleInfoBtn() {
 
             // 车辆&人员详情-周概况接口数据
             this.vePeListInfo(this.vePeBool)
@@ -1263,7 +1245,7 @@ let app = new Vue({
             this.vehicleInfoBool = true
         },
         // 车辆&人员详情-周概况接口数据
-        async vePeListInfo (bool) {
+        async vePeListInfo(bool) {
             let res
             if (bool) {
                 res = await fetchAPI.post('./visual/car/carStatus', {})
@@ -1281,12 +1263,12 @@ let app = new Vue({
             }
         },
         // 车辆&人员 - 轨迹记录查询
-        trajectoryClick () {
+        trajectoryClick() {
             // 车辆&人员 - 轨迹查询方法
             this.trajectoryFun(this.vePeBool)
         },
         // 车辆&人员 - 轨迹查询方法
-        async trajectoryFun (bool) {
+        async trajectoryFun(bool) {
             let arr = [...[new Date(this.trajectoryDate[0]).Format('yyyy-MM-dd hh:mm:ss'), new Date(this.trajectoryDate[1]).Format('yyyy-MM-dd hh:mm:ss')]]
             let id = this.vehicleItemObj.id
             let res
@@ -1310,7 +1292,7 @@ let app = new Vue({
             }
         },
         // 车辆&人员管理-按钮派发事件
-        vehicleDistribute () {
+        vehicleDistribute() {
             // 派发弹框数据清空
             this.formValidate = {
                 object: '',
@@ -1326,7 +1308,7 @@ let app = new Vue({
             this.vehicleDistributeBool = true
         },
         // 车辆&人员-派发对象接口
-        async vePeDistribute (bool) {
+        async vePeDistribute(bool) {
             let res = await fetchAPI.post('./visual/car/people', {})
             if (res.code == 200) {
                 console.groupCollapsed(`${bool ? '车辆' : '人员'}-派发对象接口`)
@@ -1338,12 +1320,12 @@ let app = new Vue({
             }
         },
         // 车辆&人员管理-详情关闭事件
-        vehicleInfoClose () {
+        vehicleInfoClose() {
             this.vehicleInfoBool = false
             this.vehicleDistributeBool = false
         },
         // 车辆&人员管理-派发提交方法
-        handleSubmit (name) {
+        handleSubmit(name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log(this.formValidate)
@@ -1355,7 +1337,7 @@ let app = new Vue({
             })
         },
         // 车辆&人员接口提交方法
-        async handleSubmitFun (bool) {
+        async handleSubmitFun(bool) {
             let c_e_id = this.vehicleItemObj.id
             let user_id = this.formValidate.object
             let end_time = new Date(this.formValidate.date).Format('yyyy-MM-dd')
@@ -1399,26 +1381,20 @@ let app = new Vue({
                 this.$Message.error(res.msg)
             }
         },
-        kaishi(){
+        kaishi() {
             window.db = null;
-            // var webGlobe=new Cesium.viewer("cesiumContainer",{});
-            // var viewer = new Cesium.viewer("cesiumContainer",{});
-            // var webGlobe=new Cesium.WebSceneControl("cesiumContainer",{});
             viewer = new Cesium.Viewer('cesiumMap');
-            this.viewer=viewer;
+            this.viewer = viewer;
             // var webGlobe = new Cesium3DTile.WebSceneControl('GlobeView',{showInfo:true});
             console.log(viewer);
-            //viewer.shadows=Cesium.ShadowMode.ENABLED;;
-            // viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50     // [ Number ,设置相机最小缩放距离,距离地表n米 ]
-            //viewer.scene.shadowMap.softShadows  = true
-        
-            viewer.shouldAnimate= true,               // [ Bool, 是否开启动画 ]
-            viewer.requestRenderMode= true,            // [ Bool, 启用请求渲染模式 ]
-            viewer.scene3DOnly= false,                 // [ Bool, 每个几何实例将只能以3D渲染以节省GPU内存 ]
-            viewer.sceneMode= 3,                       // [ Number,初始场景模式 1 2D模式 2 2D循环模式 3 3D模式  Cesium.SceneMode ]
-            viewer.fullscreenElement= document.body,   // [ Object, 全屏时渲染的HTML元素 ]
-            viewer.scene.globe.depthTestAgainstTerrain = true;
-            window.vi=viewer;
+
+            viewer.shouldAnimate = true,               // [ Bool, 是否开启动画 ]
+                viewer.requestRenderMode = true,            // [ Bool, 启用请求渲染模式 ]
+                viewer.scene3DOnly = false,                 // [ Bool, 每个几何实例将只能以3D渲染以节省GPU内存 ]
+                viewer.sceneMode = 3,                       // [ Number,初始场景模式 1 2D模式 2 2D循环模式 3 3D模式  Cesium.SceneMode ]
+                viewer.fullscreenElement = document.body,   // [ Object, 全屏时渲染的HTML元素 ]
+                viewer.scene.globe.depthTestAgainstTerrain = true;
+            window.vi = viewer;
             viewer.scene.undergroundMode = false;                                  // [ Bool , 设置开启地下场景 ]
             viewer.scene.terrainProvider.isCreateSkirt = false;                    // [ Bool , 关闭裙边 ]
             viewer.scene.globe.enableLighting = true;                             // [ Bool , 是否添加全球光照，scene(场景)中的光照将会随着每天时间的变化而变化 ]
@@ -1430,69 +1406,30 @@ let app = new Vue({
             viewer.scene.shadowMap.enabled = true;
             viewer.scene.light.intensity = 1.0;
             // viewer.scene.shadowMap.softShadows = true;
-            viewer.scene.shadowMap.darkness= 0.5;
-
+            viewer.scene.shadowMap.darkness = 0.5;
+            viewer.skyBox = false;
             viewer.camera.contrastBias = 5; // 增加对比度
             viewer.camera.exposure = 1.0; // 增加曝光
 
 
-
-            console.log(Cesium.VERSION);
-            
-            // viewer2d = new Cesium.Viewer('cesiumContainer2D');
-            // // 加载二维地图的影像图层
-            // const imageryProvider = new Cesium.OpenStreetMapImageryProvider({
-            //     url: 'https://a.tile.openstreetmap.org/'
-            // });
-            // viewer2d.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({
-            //        name:"img_arcgis",
-            //        url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-            //    }));
-            // viewer2d.scene.imageryLayers.addImageryProvider(imageryProvider);
-
-
             viewer.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({
-                    name:"img_arcgis",
-                    url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-                }));
-             /*//地形效果
-             viewer.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({
-                    name:"img_arcgis",
-                    url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-                }));*/
-        
-                // const cameraPosition = viewer.camera.positionWC.clone();
-        
-                // // 在二维地图上添加点
-                // if (cameraPointEntity) {
-                //     // 如果点已经存在，则更新其位置
-                //     cameraPointEntity.position = cameraPosition;
-                // } else {
-                //     // 如果点不存在，则创建一个新的点
-                //     cameraPointEntity = viewer2d.entities.add({
-                //         position: cameraPosition,
-                //         point: {
-                //             pixelSize: 10,
-                //             color: Cesium.Color.RED,
-                //             outlineColor: Cesium.Color.WHITE,
-                //             outlineWidth: 2
-                //         }
-                //     });
-                // }
-        
-            scene=viewer.scene;
-            camera=viewer.camera;
+                name: "img_arcgis",
+                url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
+            }));
+
+            scene = viewer.scene;
+            camera = viewer.camera;
             console.log(viewer);
-        
-            
-            zizhuan=setInterval(function(){
+
+
+            zizhuan = setInterval(function () {
                 camera.rotateLeft();
-            },25)
+            }, 25)
 
             //var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-            let tiles =new Cesium.Cesium3DTileset({
+            let tiles = new Cesium.Cesium3DTileset({
                 //url: "Data/3Dtiles/terra_b3dms/tileset.json",
-                url:"Data/3Dtiles/cesiumosgb/tileset.json",
+                url: "Data/3Dtiles/cesiumosgb/tileset.json",
                 shadows: Cesium.ShadowMode.ENABLED,
             })
             //console.log(tiles.shadows)
@@ -1519,59 +1456,58 @@ let app = new Vue({
             });
 
             // 等待模型加载完成
-            tileset.readyPromise.then(function(tileset) {
+            tileset.readyPromise.then(function (tileset) {
                 // 获取模型的变换矩阵
                 let modelMatrix = tileset.root.transform.clone();
-                
+
                 // 设置向下平移的距离（例如，向下平移10米）
                 let heightOffset = -25.0;
-                
+
                 // 创建一个平移矩阵
                 let translation = Cesium.Cartesian3.fromElements(0, 0, heightOffset);
                 let translationMatrix = Cesium.Matrix4.fromTranslation(translation);
-                
+
                 // 应用平移矩阵
                 Cesium.Matrix4.multiply(modelMatrix, translationMatrix, modelMatrix);
                 tileset.root.transform = modelMatrix;
-            }).otherwise(function(error) {
+            }).otherwise(function (error) {
                 console.log(error);
             });
 
             //console.log(tileset.shadows)
-            window.tileset=tileset;
-        
-            document.addEventListener('keydown', function(e) {
+            window.tileset = tileset;
+
+            document.addEventListener('keydown', function (e) {
                 console.log(e);
-                switch(e.key)
-                {
-                    case "w":camera.moveForward(moveRate);break
-                    case "s":camera.moveBackward(moveRate);break
+                switch (e.key) {
+                    case "w": camera.moveForward(moveRate); break
+                    case "s": camera.moveBackward(moveRate); break
                     //case "a":camera.moveLeft(moveRate);break
                     //case "d":camera.moveRight(moveRate);break
-                    case "z":camera.moveUp(moveRate);break
-                    case "x":camera.moveDown(moveRate);break
-                    case "a":camera.lookLeft();break
-                    case "d":camera.lookRight();break
-                    case "m":moveRate++;break
-                    case "n":moveRate--;break
-                    case "ArrowDown": camera.moveDown(moveRate);break
-                    case "ArrowLeft":camera.moveLeft(moveRate);break
-                    case "ArrowUp":camera.moveUp(moveRate);break
-                    case "ArrowRight":camera.moveRight(moveRate);break
-                    case "p":{
+                    case "z": camera.moveUp(moveRate); break
+                    case "x": camera.moveDown(moveRate); break
+                    case "a": camera.lookLeft(); break
+                    case "d": camera.lookRight(); break
+                    case "m": moveRate++; break
+                    case "n": moveRate--; break
+                    case "ArrowDown": camera.moveDown(moveRate); break
+                    case "ArrowLeft": camera.moveLeft(moveRate); break
+                    case "ArrowUp": camera.moveUp(moveRate); break
+                    case "ArrowRight": camera.moveRight(moveRate); break
+                    case "p": {
                         window.appk.createModel();
                         // window.appk.moveModelAlongPath();
                         break
                     }
-                    case "k":{
+                    case "k": {
                         var head = camera.heading;
                         var pitch = camera.pitch;
                         var roll = camera.roll;
-                        console.log("position:"+camera.position+"\nhead:"+head+"\npitch:"+pitch+"\nroll:"+roll);
+                        console.log("position:" + camera.position + "\nhead:" + head + "\npitch:" + pitch + "\nroll:" + roll);
                         break
                     }
-                    case "j":{
-                       // 在保存更改时执行的函数
+                    case "j": {
+                        // 在保存更改时执行的函数
                         // 导出数据库中的数据
                         const data = window.db.export();
                         const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -1585,53 +1521,32 @@ let app = new Vue({
                             method: 'POST',
                             body: formData
                         })
-                        .then(response => {
-                            if (response.ok) {
-                                console.log('Database file uploaded successfully');
-                            } else {
-                                console.error('Failed to upload database file');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error uploading database file:', error);
-                        });
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log('Database file uploaded successfully');
+                                } else {
+                                    console.error('Failed to upload database file');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error uploading database file:', error);
+                            });
 
                     }
-                    case "Escape":{
-                        
-                    viewer.scene.camera.flyTo({
-                        destination: new Cesium.Cartesian3.fromDegrees(114.61321, 30.45914, 300.4), // 世界坐标点
-                    })
-                    };break
-                    case "l":{
+                    case "Escape": {
+
+                        viewer.scene.camera.flyTo({
+                            destination: new Cesium.Cartesian3.fromDegrees(114.61321, 30.45914, 300.4), // 世界坐标点
+                        })
+                    }; break
+                    case "l": {
                         // console.log(cameraPointEntity.position);
-                        // var position = viewer.camera.position.clone();
-                        // var targetHeight = 500;
-                        // var ellipsoid = viewer.scene.globe.ellipsoid;
-                        // var cartographicPosition = ellipsoid.cartesianToCartographic(position);
-                        // console.log(cartographicPosition);
-                        // var fixedCartographicPosition = new Cesium.Cartographic(cartographicPosition.longitude, cartographicPosition.latitude, targetHeight);
-                        // var fixedPosition = ellipsoid.cartographicToCartesian(fixedCartographicPosition);
-                        // console.log(fixedPosition);
-
-                        // var handler = new Cesium.ScreenSpaceEventHandler(viewer2d.canvas);
-                        // console.log("2D启动")
-
-                        // handler.setInputAction(function(click) {
-                        //     console.log("2D点击")
-                        //     var cartesian = viewer2d.camera.pickEllipsoid(click.position, viewer2d.scene.globe.ellipsoid);
-                        //     if (cartesian) {
-                        //         var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                        //         var longitude = Cesium.Math.toDegrees(cartographic.longitude);
-                        //         var latitude = Cesium.Math.toDegrees(cartographic.latitude);
-                        //         console.log("Clicked at (lon, lat):", longitude, latitude);
-                        //         // 在这里你可以使用点击的经纬度坐标进行其他操作，比如绘制热力图
-                        //     }
-                        // }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
                         addDrawElement()
-                    };break
+                    }; break
                 }
-             }, false);
+            }, false);
+
+
 
             initSqlJs().then(SQL => {
                 SQLk = SQL;
@@ -1645,41 +1560,40 @@ let app = new Vue({
                         // 将 highlight 列的所有值设为 0
                         window.db.exec("UPDATE dormitories SET highlight = 0");
 
-                    // 执行其他操作，如添加图层等
-                    this.showvectorSource = new ol.source.Vector();
-                    // openlayersMap = this.openlayersMap;
-                    this.showvectorLayer = new ol.layer.Vector({
-                        source: this.showvectorSource,
-                        style: new ol.style.Style({
-                            fill: new ol.style.Fill({
-                                color: 'rgba(255, 255, 255, 0.2)'
-                            }),
-                            stroke: new ol.style.Stroke({
-                                color: '#ffcc33',
-                                width: 2
-                            }),
-                            image: new ol.style.Circle({
-                                radius: 7,
+                        // 执行其他操作，如添加图层等
+                        this.showvectorSource = new ol.source.Vector();
+                        this.showvectorLayer = new ol.layer.Vector({
+                            source: this.showvectorSource,
+                            style: new ol.style.Style({
                                 fill: new ol.style.Fill({
-                                    color: '#ffcc33'
+                                    color: 'rgba(255, 255, 255, 0.2)'
+                                }),
+                                stroke: new ol.style.Stroke({
+                                    color: '#ffcc33',
+                                    width: 2
+                                }),
+                                image: new ol.style.Circle({
+                                    radius: 7,
+                                    fill: new ol.style.Fill({
+                                        color: '#ffcc33'
+                                    })
                                 })
-                            })
-                        }),
-                        name: '建筑图层'
-                    });
-                    this.openlayersMap.addLayer(this.showvectorLayer);
-                    this.erdrefresh();
+                            }),
+                            name: '建筑图层'
+                        });
+                        this.openlayersMap.addLayer(this.showvectorLayer);
+                        this.erdrefresh();
 
-                })
-                .catch(error => {
-                    console.error("Error reading database file:", error);
-                });
+                    })
+                    .catch(error => {
+                        console.error("Error reading database file:", error);
+                    });
             }).catch(error => {
                 console.error("Error initializing SQL.js:", error);
             });
 
 
-            layui.use(['layer'], function() {
+            layui.use(['layer'], function () {
                 layer = layui.layer; // 获取 layer 对象
                 console.log("layer 对象是否获取成功：", layer);
 
@@ -1696,14 +1610,21 @@ let app = new Vue({
                     base: './' // 定义主题目录，这里是根目录
                 }).extend({
                     theme: 'new' // new.css 文件名，无需扩展名
-                }).use(['theme'], function(){
+                }).use(['theme'], function () {
                     // 添加调试信息
                     console.log('自定义主题已应用');
                 });
             });
+
+            //加载three
+            threeOverlay = new ThreeOverlay(this.viewer.camera);
+            viewer.scene.postRender.addEventListener(() => {
+                threeOverlay.render();
+            });
+
         },
         // 进入地图方法
-        access () {
+        access() {
             viewer.scene.camera.flyTo({
                 // destination: new Cesium.Cartesian3(-2451201.5046990025, 4571284.980416953, 3701213.225177628), // 世界坐标点
                 destination: new Cesium.Cartesian3.fromDegrees(114.61321, 30.45914, 300.4), // 世界坐标点
@@ -1714,103 +1635,24 @@ let app = new Vue({
                 // }
             })
             clearInterval(zizhuan);
-            
+
         },
 
         // 进入地图事件
-        clickAccess () {
+        clickAccess() {
             console.log(viewer);
-            window.vi=viewer;
+            window.vi = viewer;
             console.log("启动");
-            var pnumel=document.getElementById("people");
-            pnum=Math.floor(Math.random() * 2000)+6000;
-            pnumel.innerHTML=String(pnum)+"人";
+            var pnumel = document.getElementById("people");
+            pnum = Math.floor(Math.random() * 2000) + 6000;
+            pnumel.innerHTML = String(pnum) + "人";
             peo();
-            
-            // viewer.camera.changed.addEventListener(function() {
-            //     // 获取三维地图的摄像机位置和姿态
-            //     var position = viewer.camera.position.clone();
-            //     var heading = viewer.camera.heading;
-            
-            //     // 计算固定高度的目标位置（将三维地图的摄像机位置的高度设为固定值）
-            //     var targetHeight = 500;
-            //     var ellipsoid = viewer.scene.globe.ellipsoid;
-            //     var cartographicPosition = ellipsoid.cartesianToCartographic(position);
-            //     var fixedCartographicPosition = new Cesium.Cartographic(cartographicPosition.longitude, cartographicPosition.latitude, targetHeight);
-            //     var fixedPosition = ellipsoid.cartographicToCartesian(fixedCartographicPosition);
-            
-            //     // 设置二维地图的摄像机位置和姿态
-            //     viewer2d.camera.setView({
-            //         destination: fixedPosition,
-            //         orientation: {
-            //             heading: heading, // 保持与三维地图相同的方向
-            //             pitch: Cesium.Math.toRadians(-90), // 俯视角度
-            //             roll: 0 // 保持水平
-            //         }
-            //     });
-            //     const cameraPosition = viewer.camera.positionWC.clone();
-
-            //     // 将点的高度降低80米
-            //     const newCameraPositionCartographic = Cesium.Cartographic.fromCartesian(cameraPosition);
-            //     newCameraPositionCartographic.height -= 80;
-            //     const newCameraPosition = Cesium.Cartesian3.fromRadians(newCameraPositionCartographic.longitude, newCameraPositionCartographic.latitude, newCameraPositionCartographic.height);
-
-            //     cameraPointEntity.position = newCameraPosition;
-            // });
-            
-
-
-
-
-            // // 假设您有一个包含经纬度坐标和权重值的数据数组
-            // const heatMapData = [
-            //     { position: Cesium.Cartesian3.fromDegrees(-75.59777, 40.03883), weight: 0.5 },
-            //     { position: Cesium.Cartesian3.fromDegrees(-75.58777, 40.04883), weight: 0.8 },
-            //     // 其他数据点
-            // ];
-            
-            // // 创建一个 EntityCollection 来存储热力图点
-            // const heatMapEntities = new Cesium.EntityCollection();
-            
-            // // 遍历数据数组，为每个数据点创建一个 Entity，并根据权重值设置颜色、大小等属性
-            // heatMapData.forEach(data => {
-            //     const entity = heatMapEntities.add({
-            //     position: data.position,
-            //     point: {
-            //         pixelSize: data.weight * 10, // 根据权重值调整点的大小
-            //         color: Cesium.Color.fromAlpha(Cesium.Color.RED, data.weight), // 根据权重值设置颜色
-            //         outlineColor: Cesium.Color.WHITE,
-            //         outlineWidth: 1
-            //     }
-            //     });
-            // });
-            
-            // console.log(heatMapEntities);
-
-            // // 将热力图 EntityCollection 添加到场景中
-            // viewer.scene.primitives.add(heatMapEntities);
-            
-            /*
-            mars3d.widget.activate({
-                uri: "widget.js",
-                abc: "123"//参数传递
-            });
-
-            /*
-            console.log("启动")
-            if (!mars3d.util.webglreport()) {
-                alert('系统检测到您使用的浏览器不支持WebGL功能');
-                layer.open({
-                    type: 1,
-                    title: "当前浏览器不支持WebGL功能",
-                    closeBtn: 0,
-                    shadeClose: false,
-                    resize: false,
-                    area: ['600px', '200px'], //宽高
-                    content: '<div style="margin: 20px;"><h3>系统检测到您使用的浏览器不支持WebGL功能！</h3>  <p>1、请您检查浏览器版本，安装使用最新版chrome、火狐或IE11以上浏览器！</p> <p>2、WebGL支持取决于GPU支持，请保证客户端电脑已安装显卡驱动程序！</p></div>'
-                });
-            }*/
-
+            const targetLayer = new GaussianSplatLayer(
+                "./src/assets/model/enviroment.splat",
+                { lon: 114.62463, lat: 30.462502, height: 0 },
+                { x: 0.799985294426387, y: -0.561475491622485, z: 2.430876453678189 }
+            );
+            threeOverlay.addGaussianSplatLayer(targetLayer);
             this.dataSet()
             setTimeout(() => {
                 // 地球自转结束
@@ -1841,8 +1683,8 @@ let app = new Vue({
                 }, 6000)
                 this.access()
                 setTimeout(() => {
-                    
-                    var cartesian = new Cesium.Cartesian3(-2291819.48,5002687.60,3214334.39);
+
+                    var cartesian = new Cesium.Cartesian3(-2291819.48, 5002687.60, 3214334.39);
 
                     // 将笛卡尔坐标转换为地理坐标（经纬度和高程）
                     var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
@@ -1851,7 +1693,7 @@ let app = new Vue({
                     var height = cartographic.height;
 
 
-                    window.ellipse = viewer.entities.add( new Cesium.Entity({
+                    window.ellipse = viewer.entities.add(new Cesium.Entity({
                         // position: Cesium.Cartesian3.fromDegrees(114.61321, 30.44964,32.4),
                         position: Cesium.Cartesian3.fromDegrees(longitude, latitude, height),
                         ellipse: {
@@ -1862,61 +1704,61 @@ let app = new Vue({
                             outline: false, //是否显示边框
                             outlineColor: Cesium.Color.BLUE, //边框颜色
                             rotation: Cesium.Math.toRadians(45), //旋转角度,从正北方向开始顺时针旋转
-                            shadows:Cesium.ShadowMode.ENABLED,
+                            shadows: Cesium.ShadowMode.ENABLED,
                         },
-                    }) );
+                    }));
 
 
-                    
-                    window.ellipse.show=false;
 
-                
+                    window.ellipse.show = false;
+
+
                 }, 6000)
-                window.adva={};
-                window.meda={};
-                window.parking={};
-                window.parking["place"]=null;
-                window.parking["movingcar"]=null;
-                window.parking["roadline"]=null;
-                window.parking["car"]=[];
-                window.parking["cardata"]=null;
-                window.parking["placedata"]=null;
-                window.meda["road"]=[];
-                window.meda["roadtd"]=[];
-                window.meda["area"]=[];
-                window.meda["po"]=null;
-                window.danwei={};
-                window.danwei["shuzhi"]=1.0;
-                window.danwei["mingcheng"]="米";
-                window.waterPrimitive=null;
-                window.polygonFeatures=[];
-                window.isPolygonClickEnabled=true;
-                window.zuiduan=[];
-                window.zuimei=[]
-               /*window.sourcepoints=viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-                    url: 'sp/sourcepoints/tileset.json',
-                    modelMatrix: Cesium.Matrix4.fromArray(
-                    [0.9998503272726612,-0.013705064737410178,0.01055908392312263,0,
-                    0.013837537004817352,0.9998251605952196,-0.012576597726820071,0,
-                    -0.010384874693151969,0.012720827067660478,0.9998651583770293,0,
-                    -184956.33661949774,1680738.4427380064,-2842750.3556499034,1]),
-                }));
-
-                window.featurepoints=viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-                    url: 'sp/featurepoints/tileset.json',
-                    modelMatrix: Cesium.Matrix4.fromArray(
-                        [0.9999435868317672,-0.00868010159007579,0.0061220086904817395,0,
-                        0.008754220242164823,0.9998874278951718,-0.01218585922816734,0,
-                        -0.006015545027015484,0.012238765197641277,0.9999070085985322,0,
-                        -195153.54311457113,1693979.0284326258,-2853531.6325311265,1]),
-                  }));*/
+                window.adva = {};
+                window.meda = {};
+                window.parking = {};
+                window.parking["place"] = null;
+                window.parking["movingcar"] = null;
+                window.parking["roadline"] = null;
+                window.parking["car"] = [];
+                window.parking["cardata"] = null;
+                window.parking["placedata"] = null;
+                window.meda["road"] = [];
+                window.meda["roadtd"] = [];
+                window.meda["area"] = [];
+                window.meda["po"] = null;
+                window.danwei = {};
+                window.danwei["shuzhi"] = 1.0;
+                window.danwei["mingcheng"] = "米";
+                window.waterPrimitive = null;
+                window.polygonFeatures = [];
+                window.isPolygonClickEnabled = true;
+                window.zuiduan = [];
+                window.zuimei = []
                 water();
                 //viewer.flyTo(x);
             }, 500)
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "q") {
+                    const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
+
+                    // 指定摄像机的位置（相对于目标点的偏移量）
+                    const offset = new Cesium.HeadingPitchRange(
+                        Cesium.Math.toRadians(0), // 方向（朝向角度）
+                        Cesium.Math.toRadians(-90), // 倾斜角度
+                        100 // 距离目标点的距离（米）
+                    );
+
+                    // 使用lookAt方法移动摄像机
+                    viewer.scene.camera.lookAt(target, offset);
+
+                }
+            });
+
         },
 
         // swiper组件初始化
-        swiperInit () {
+        swiperInit() {
             let swiper = new Swiper('.gallery-top', {
                 effect: 'coverflow',
                 grabCursor: true,
@@ -1940,12 +1782,12 @@ let app = new Vue({
             })
         },
         // 图片预览model层关闭
-        closeSwiperBox () {
+        closeSwiperBox() {
             this.swiperImgBool = false
         },
 
         // 访问引导方法
-        guide () {
+        guide() {
             let options = {
                 /* 下一步按钮的显示名称 */
                 nextLabel: 'Next',
@@ -1998,7 +1840,7 @@ let app = new Vue({
         },
 
         // nav搜索弹框初始化 关闭所有
-        selNavBoxClose () {
+        selNavBoxClose() {
             this.noBoxBool = false
             this.tipsboxBool = false
             this.streeBool = false
@@ -2018,7 +1860,7 @@ let app = new Vue({
             this.vehicleInfoBool = false
         },
         // nav搜索栏内容状态处理方法
-        selNavState (info) {
+        selNavState(info) {
             awakenMove(this)
             removeDynamicLayer(viewer, { element: '#one' })
             // 关闭所有弹框
@@ -2124,7 +1966,7 @@ let app = new Vue({
                 //this.street_id = 0
                 //this.PolyLinePrimitives(this.streeData)
                 mars3d.widget.activate({
-                    uri: "widgets/measure/widget.js", 
+                    uri: "widgets/measure/widget.js",
                     filename: "filename"
                 });
 
@@ -2136,7 +1978,7 @@ let app = new Vue({
                 //this.street_id = 0
                 //this.PolyLinePrimitives(this.streeData)
                 mars3d.widget.activate({
-                    uri: "widgets/_example/widget.js", 
+                    uri: "widgets/_example/widget.js",
                     filename: "filename2"
                 });
 
@@ -2148,7 +1990,7 @@ let app = new Vue({
                 //this.street_id = 0
                 //this.PolyLinePrimitives(this.streeData)
                 mars3d.widget.activate({
-                    uri: "widgets/_example/widget.js", 
+                    uri: "widgets/_example/widget.js",
                     filename: "filename2"
                 });
 
@@ -2159,7 +2001,7 @@ let app = new Vue({
             this.noBoxBool = true
         },
         // nav搜索栏获取焦点方法
-        searchFocus () {
+        searchFocus() {
             // console.log('seach聚焦')
             //debugger;
             this.alertboxBool = true
@@ -2169,13 +2011,13 @@ let app = new Vue({
             this.selNavState(this.selInp)
         },
         // nav搜索栏失去焦点方法
-        searchBlur () {
+        searchBlur() {
             // console.log('seach失焦')
             // this.alertboxBool = false
             // this.navBool = true
         },
         // nav搜索栏清空方法
-        searchClear () {
+        searchClear() {
             this.selInp = ''
             this.alertboxBool = false
 
@@ -2187,7 +2029,7 @@ let app = new Vue({
             //this.access()
         },
         // nav搜索栏点击搜索-处理事件:保存历史
-        searchClick () {
+        searchClick() {
             // 判断是否为可用数据-添加历史
             if (/^([\u4e00-\u9fa5a-z]|[0-9])+$/gi.test(this.selInp)) {
                 this.tipsHistoryData.push({
@@ -2198,14 +2040,13 @@ let app = new Vue({
         },
 
         // 默认弹框-历史记录点击&模块点击
-        tipsClickItem (name) {
+        tipsClickItem(name) {
             this.navState = name
             this.selInp = name
             this.searchFocus()
         },
         //新添加的功能位置，代码定位点
-        add_classrooms(feature1)
-        {
+        add_classrooms(feature1) {
             var that = this;
             layer.open({
                 title: "添加教室",
@@ -2241,10 +2082,10 @@ let app = new Vue({
                         </div>
                     </div>
                     </form>`,
-                    yes: function (index, layero) {
+                yes: function (index, layero) {
                     // 获取表单数据
                     var formData = layero.find("form").serializeArray();
-                    
+
                     // 构造数据库记录
                     var record = {
                         name: formData[0].value,
@@ -2256,18 +2097,18 @@ let app = new Vue({
                         // 例如，假设绘制的图形为多边形，可以通过 feature.getGeometry().getCoordinates() 获取坐标数组
                         geom: JSON.stringify(feature1.getGeometry().getCoordinates()),
                     };
-                    
+
                     // var db=this.db
                     // 保存数据到 SQLite 数据库
                     var sql = `INSERT INTO classrooms (name, situations, adminName, adminPhone, college, geom) 
                     VALUES (?, ?, ?, ?, ?, ?)`;
                     console.log("geom:", record.geom);
-                    window.db.run(sql, [record.name, record.situations, record.adminname, record.adminPhone, record.college, record.geom], function(err) {
-                    if (err) {
-                    console.error("Error inserting record:", err);
-                    } else {
-                    console.log("Record inserted successfully.");
-                    }
+                    window.db.run(sql, [record.name, record.situations, record.adminname, record.adminPhone, record.college, record.geom], function (err) {
+                        if (err) {
+                            console.error("Error inserting record:", err);
+                        } else {
+                            console.log("Record inserted successfully.");
+                        }
                     });
 
                     layer.close(index);
@@ -2279,8 +2120,7 @@ let app = new Vue({
                 }
             });
         },
-        add_office(feature1)
-        {
+        add_office(feature1) {
             var that = this;
             layer.open({
                 title: "添加教学楼",
@@ -2310,10 +2150,10 @@ let app = new Vue({
                     </div>
                     
                     </form>`,
-                    yes: function (index, layero) {
+                yes: function (index, layero) {
                     // 获取表单数据
                     var formData = layero.find("form").serializeArray();
-                    
+
                     // 构造数据库记录
                     var record = {
                         name: formData[0].value,
@@ -2324,18 +2164,18 @@ let app = new Vue({
                         // 例如，假设绘制的图形为多边形，可以通过 feature.getGeometry().getCoordinates() 获取坐标数组
                         geom: JSON.stringify(feature1.getGeometry().getCoordinates()),
                     };
-                    
+
                     // var db=this.db
                     // 保存数据到 SQLite 数据库
                     var sql = `INSERT INTO offices (name, height, adminName, teacherNum, geom) 
                     VALUES (?, ?, ?, ?, ?)`;
                     console.log("geom:", record.geom);
-                    window.db.run(sql, [record.name, record.height, record.adminName, record.teacherNum, record.geom], function(err) {
-                    if (err) {
-                    console.error("Error inserting record:", err);
-                    } else {
-                    console.log("Record inserted successfully.");
-                    }
+                    window.db.run(sql, [record.name, record.height, record.adminName, record.teacherNum, record.geom], function (err) {
+                        if (err) {
+                            console.error("Error inserting record:", err);
+                        } else {
+                            console.log("Record inserted successfully.");
+                        }
                     });
 
                     layer.close(index);
@@ -2343,13 +2183,12 @@ let app = new Vue({
                     setTimeout(() => {
                         that.erdrefresh();
                     }, 1000); // 1秒延迟
-                    
+
                 }
             });
         },
-        
-        add_canting(feature1)
-        {
+
+        add_canting(feature1) {
             var that = this;
             layer.open({
                 title: "添加餐厅",
@@ -2380,10 +2219,10 @@ let app = new Vue({
                     </div>
                     
                     </form>`,
-                    yes: function (index, layero) {
+                yes: function (index, layero) {
                     // 获取表单数据
                     var formData = layero.find("form").serializeArray();
-                    
+
                     // 构造数据库记录
                     var record = {
                         name: formData[0].value,
@@ -2394,18 +2233,18 @@ let app = new Vue({
                         // 例如，假设绘制的图形为多边形，可以通过 feature.getGeometry().getCoordinates() 获取坐标数组
                         geom: JSON.stringify(feature1.getGeometry().getCoordinates()),
                     };
-                    
+
                     // var db=this.db
                     // 保存数据到 SQLite 数据库
                     var sql = `INSERT INTO cantings (name, height, adminName, adminPhone, geom) 
                     VALUES (?, ?, ?, ?, ?)`;
                     console.log("geom:", record.geom);
-                    window.db.run(sql, [record.name, record.height, record.adminName, record.adminPhone, record.geom], function(err) {
-                    if (err) {
-                    console.error("Error inserting record:", err);
-                    } else {
-                    console.log("Record inserted successfully.");
-                    }
+                    window.db.run(sql, [record.name, record.height, record.adminName, record.adminPhone, record.geom], function (err) {
+                        if (err) {
+                            console.error("Error inserting record:", err);
+                        } else {
+                            console.log("Record inserted successfully.");
+                        }
                     });
 
                     layer.close(index);
@@ -2417,7 +2256,7 @@ let app = new Vue({
                 }
             });
         },
-        add_dorm(feature1){
+        add_dorm(feature1) {
             var that = this;
             console.log("执行add—dorm函数啦！");
             layer.open({
@@ -2466,10 +2305,10 @@ let app = new Vue({
                         </div>
                     </div>
                     </form>`,
-                    yes: function (index, layero) {
+                yes: function (index, layero) {
                     // 获取表单数据
                     var formData = layero.find("form").serializeArray();
-                    
+
                     // 构造数据库记录
                     var record = {
                         name: formData[0].value,
@@ -2483,18 +2322,18 @@ let app = new Vue({
                         // 例如，假设绘制的图形为多边形，可以通过 feature.getGeometry().getCoordinates() 获取坐标数组
                         geom: JSON.stringify(feature1.getGeometry().getCoordinates()),
                     };
-                    
+
                     // var db=this.db
                     // 保存数据到 SQLite 数据库
                     var sql = `INSERT INTO dormitories (name, dormitoryNum, fourPeopleRoomNum, sixPeopleRoomNum, adminName, adminPhone, college, geom) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
                     console.log("geom:", record.geom);
-                    window.db.run(sql, [record.name, record.dormitoryNum, record.fourPeopleRoomNum, record.sixPeopleRoomNum, record.adminName, record.adminPhone, record.college, record.geom], function(err) {
-                    if (err) {
-                    console.error("Error inserting record:", err);
-                    } else {
-                    console.log("Record inserted successfully.");
-                    }
+                    window.db.run(sql, [record.name, record.dormitoryNum, record.fourPeopleRoomNum, record.sixPeopleRoomNum, record.adminName, record.adminPhone, record.college, record.geom], function (err) {
+                        if (err) {
+                            console.error("Error inserting record:", err);
+                        } else {
+                            console.log("Record inserted successfully.");
+                        }
                     });
 
                     layer.close(index);
@@ -2506,9 +2345,9 @@ let app = new Vue({
                 }
             });
         },
-        sltj(sec=0){
-            var that=this;
-            var map=this.openlayersMap;
+        sltj(sec = 0) {
+            var that = this;
+            var map = this.openlayersMap;
             var vectorSource2 = new ol.source.Vector();
             // var layer=this.layer;
             console.log(layer);
@@ -2520,56 +2359,56 @@ let app = new Vue({
             layer.msg("请在地图上绘制建筑物的轮廓");
 
             var draw = new ol.interaction.Draw({
-            source: vectorSource2,
-            type: "Polygon",
+                source: vectorSource2,
+                type: "Polygon",
             });
             map.addInteraction(draw);
             draw.on("drawend", function (e) {
-            var feature = e.feature;
-            console.log(feature);
-            //将feature的坐标转换为经纬度
-            var coordinates = feature.getGeometry().getCoordinates();
-            console.log(coordinates);
-            for (let i in coordinates[0]) {
-                coordinates[0][i] = ol.proj.transform(
-                coordinates[0][i],
-                "EPSG:3857",
-                "EPSG:4326"
-                );
-            }
-            feature.getGeometry().setCoordinates(coordinates);
-            var projection = map.getView().getProjection();
-            console.log("Projection:", projection. getCode());
-            //移除绘制
-            map.removeInteraction(draw);
-            //添加属性
-            if(sec==1){
-                that.add_classrooms(feature);
-            }
-            else if(sec==2){
-                that.add_dorm(feature);
-            }
-            else if(sec==3){
-                that.add_office(feature);
-            }
-            else if(sec==4){    
-                that.add_canting(feature);
-            }
-            console.log("fff.");
+                var feature = e.feature;
+                console.log(feature);
+                //将feature的坐标转换为经纬度
+                var coordinates = feature.getGeometry().getCoordinates();
+                console.log(coordinates);
+                for (let i in coordinates[0]) {
+                    coordinates[0][i] = ol.proj.transform(
+                        coordinates[0][i],
+                        "EPSG:3857",
+                        "EPSG:4326"
+                    );
+                }
+                feature.getGeometry().setCoordinates(coordinates);
+                var projection = map.getView().getProjection();
+                console.log("Projection:", projection.getCode());
+                //移除绘制
+                map.removeInteraction(draw);
+                //添加属性
+                if (sec == 1) {
+                    that.add_classrooms(feature);
+                }
+                else if (sec == 2) {
+                    that.add_dorm(feature);
+                }
+                else if (sec == 3) {
+                    that.add_office(feature);
+                }
+                else if (sec == 4) {
+                    that.add_canting(feature);
+                }
+                console.log("fff.");
 
             }
-        );
+            );
         },
-        draw_classrooms(){
+        draw_classrooms() {
             var stmt = `SELECT id, name, geom ,highlight FROM classrooms`;
             var rows = window.db.exec(stmt);
             console.log("rows:", rows);
-    
+
             // 创建一个数组来存储所有的多边形要素
             var polygonFeatures = [];
-            
+
             // window.polygonFeatures=polygonFeatures;
-            
+
             // 定义普通样式
             var normalStyle = new ol.style.Style({
                 fill: new ol.style.Fill({
@@ -2586,7 +2425,7 @@ let app = new Vue({
                     })
                 })
             });
-            
+
             // 定义高亮样式
             var highlightStyle = new ol.style.Style({
                 fill: new ol.style.Fill({
@@ -2603,7 +2442,7 @@ let app = new Vue({
                     })
                 })
             });
-            
+
             rows[0].values.forEach(row => {
                 // 解析 geom 字段中的坐标数组
                 var coordinates = JSON.parse(row[2]);
@@ -2616,19 +2455,19 @@ let app = new Vue({
                 // 创建多边形的几何对象
                 var polygonGeometry = new ol.geom.Polygon([transformedCoordinates]);
 
-               // 获取 highlight 变量的值
-               var highlight = row[3];
+                // 获取 highlight 变量的值
+                var highlight = row[3];
 
-               // 根据 highlight 的值应用不同的样式
-               var style;
-               if (highlight === 0) {
-                   console.log("使用样式0")
-                   style = normalStyle; // 使用一种样式
-               } else if (highlight === 1) {
-                   console.log("使用样式1")
-                   style = highlightStyle; // 使用另一种样式
-               }
-                
+                // 根据 highlight 的值应用不同的样式
+                var style;
+                if (highlight === 0) {
+                    console.log("使用样式0")
+                    style = normalStyle; // 使用一种样式
+                } else if (highlight === 1) {
+                    console.log("使用样式1")
+                    style = highlightStyle; // 使用另一种样式
+                }
+
 
                 // 创建多边形要素，并设置样式
                 var polygonFeature = new ol.Feature({
@@ -2638,7 +2477,7 @@ let app = new Vue({
                     buildingtypes: "classrooms"
                 });
                 polygonFeature.setStyle(style); // 设置样式
-                
+
                 // 创建文本标签来显示名称
                 var textLabel = new ol.Feature({
                     geometry: new ol.geom.Point(polygonGeometry.getInteriorPoint().getCoordinates()), // 在多边形内部的中心点
@@ -2664,18 +2503,18 @@ let app = new Vue({
                 polygonFeatures.push(polygonFeature);
                 polygonFeatures.push(textLabel);
             });
-  
+
             return polygonFeatures
         },
-        draw_cantings(){
+        draw_cantings() {
             var stmt = `SELECT id, name, geom,highlight FROM cantings`;
             var rows = window.db.exec(stmt);
-    
+
             // 创建一个数组来存储所有的多边形要素
             var polygonFeatures = [];
-            
+
             // window.polygonFeatures=polygonFeatures;
-            
+
             // 定义普通样式
             var normalStyle = new ol.style.Style({
                 fill: new ol.style.Fill({
@@ -2733,17 +2572,17 @@ let app = new Vue({
                     console.log("使用样式1")
                     style = highlightStyle; // 使用另一种样式
                 }
-                
+
 
                 // 创建多边形要素，并设置样式
                 var polygonFeature = new ol.Feature({
                     geometry: polygonGeometry,
                     name: row[1],
                     id: row[0], // 将数据库中的 ID 作为要素的唯一标识符
-                    buildingtypes:"cantings"
+                    buildingtypes: "cantings"
                 });
                 polygonFeature.setStyle(style); // 设置样式
-                
+
                 // 创建文本标签来显示名称
                 var textLabel = new ol.Feature({
                     geometry: new ol.geom.Point(polygonGeometry.getInteriorPoint().getCoordinates()), // 在多边形内部的中心点
@@ -2769,16 +2608,16 @@ let app = new Vue({
                 polygonFeatures.push(polygonFeature);
                 polygonFeatures.push(textLabel);
             });
-  
+
             return polygonFeatures
         },
-        draw_offices(){
+        draw_offices() {
             var stmt = `SELECT id, name, geom,highlight FROM offices`;
             var rows = window.db.exec(stmt);
-    
+
             // 创建一个数组来存储所有的多边形要素
             var polygonFeatures = [];
-            
+
             // window.polygonFeatures=polygonFeatures;
             // 定义高亮样式
             var normalStyle = new ol.style.Style({
@@ -2812,7 +2651,7 @@ let app = new Vue({
                     })
                 })
             });
-            
+
             rows[0].values.forEach(row => {
                 // 解析 geom 字段中的坐标数组
                 var coordinates = JSON.parse(row[2]);
@@ -2838,17 +2677,17 @@ let app = new Vue({
                     console.log("使用样式1")
                     style = highlightStyle; // 使用另一种样式
                 }
-                
+
 
                 // 创建多边形要素，并设置样式
                 var polygonFeature = new ol.Feature({
                     geometry: polygonGeometry,
                     name: row[1],
                     id: row[0], // 将数据库中的 ID 作为要素的唯一标识符
-                    buildingtypes:"offices"
+                    buildingtypes: "offices"
                 });
                 polygonFeature.setStyle(style); // 设置样式
-                
+
                 // 创建文本标签来显示名称
                 var textLabel = new ol.Feature({
                     geometry: new ol.geom.Point(polygonGeometry.getInteriorPoint().getCoordinates()), // 在多边形内部的中心点
@@ -2874,19 +2713,17 @@ let app = new Vue({
                 polygonFeatures.push(polygonFeature);
                 polygonFeatures.push(textLabel);
             });
-  
+
             return polygonFeatures
         },
-        test_app()
-        {
+        test_app() {
             console.log("wwwwwwaaak!");
         },
-        showData()
-        {
+        showData() {
             console.log("wwwwwwaaak5.0!");
             this.toggleIframe("widgets/two-dimension/chaxun/xinxi.html");
         },
-        
+
         erdrefresh() {
 
             console.log("erdrefresh6.0");
@@ -2895,17 +2732,17 @@ let app = new Vue({
             var officeFeature = this.draw_offices();
             // 清空之前绘制的图形
             this.showvectorSource.clear(); // 清空之前的要素
-        
+
             // 执行查询获取数据
             var stmt = `SELECT id, name, geom, highlight FROM dormitories`;
             var rows = window.db.exec(stmt);
             console.log("rows:", rows);
-        
+
             // 创建一个数组来存储所有的多边形要素
             var polygonFeatures = [];
-            
+
             // window.polygonFeatures=polygonFeatures;
-            
+
             // 定义普通样式
             var normalStyle = new ol.style.Style({
                 fill: new ol.style.Fill({
@@ -2971,7 +2808,7 @@ let app = new Vue({
                     buildingtypes: "dormitories"
                 });
                 polygonFeature.setStyle(style); // 设置样式
-                
+
                 // 创建文本标签来显示名称
                 var textLabel = new ol.Feature({
                     geometry: new ol.geom.Point(polygonGeometry.getInteriorPoint().getCoordinates()), // 在多边形内部的中心点
@@ -3001,19 +2838,19 @@ let app = new Vue({
             polygonFeatures = polygonFeatures.concat(classroomsFeature)
             polygonFeatures = polygonFeatures.concat(cantingFeature)
             polygonFeatures = polygonFeatures.concat(officeFeature)
-            
-        
+
+
             // 创建矢量源并将所有多边形要素添加到其中
             this.showvectorSource = new ol.source.Vector({
                 features: polygonFeatures,
             });
-        
+
             // 将矢量源设置为图层的数据源
             this.showvectorLayer.setSource(this.showvectorSource);
-            
+
             this.updateMap();
 
-            
+
             // 在 Cesium 场景中生成多边形墙壁
             // this.loadPolygonWalls();
 
@@ -3032,17 +2869,17 @@ let app = new Vue({
                         // 获取点击的多边形要素的唯一标识符
                         var id = feature.get('id');
                         var buildingtypes = feature.get('buildingtypes');
-                        if(buildingtypes=='dormitories'){
+                        if (buildingtypes == 'dormitories') {
                             this.openPopup('widgets/two-dimension/sushe/sushe.html?id=' + id);
                         }
-                        if(buildingtypes=='classrooms'){
-                            console.log('教学楼'+id+'号');
+                        if (buildingtypes == 'classrooms') {
+                            console.log('教学楼' + id + '号');
                         }
-                        if(buildingtypes=='cantings'){
-                            console.log('食堂'+id+'号');
+                        if (buildingtypes == 'cantings') {
+                            console.log('食堂' + id + '号');
                         }
-                        if(buildingtypes=='offices'){
-                            console.log('学院楼'+id+'号');
+                        if (buildingtypes == 'offices') {
+                            console.log('学院楼' + id + '号');
                         }
                         // // 根据标识符从数据库中检索信息并打印
                         // var stmt = `SELECT * FROM dormitories WHERE id = ${id}`;
@@ -3067,10 +2904,10 @@ let app = new Vue({
                 }
             });
 
-        
+
             this.updateMap();
         },
-        
+
 
         delay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
@@ -3081,17 +2918,17 @@ let app = new Vue({
                 console.error('SQLite数据库未加载');
                 return;
             }
-    
+
             let viewer = window.vi;
-    
+
             // 设置相机位置和方向
             let defaultPosition = Cesium.Cartesian3.fromDegrees(0, 0, 10000000); // 初始位置在经纬度原点上方10,000 km
             let heading = Cesium.Math.toRadians(0); // 设置相机的方向
             let pitch = Cesium.Math.toRadians(-30); // 设置相机的俯视角度
             let range = 10000000; // 设置相机到目标点的距离
-    
+
             viewer.camera.lookAt(defaultPosition, new Cesium.HeadingPitchRange(heading, pitch, range));
-    
+
             // 查询数据库中的数据
             try {
                 let stmt = window.db.prepare("SELECT * FROM Places WHERE hide = 0");
@@ -3099,10 +2936,10 @@ let app = new Vue({
                     let row = stmt.getAsObject();
                     let position = JSON.parse(row.position);  // 假设position存储为JSON字符串
                     let name = row.name;
-    
+
                     // 将经纬度坐标转换为世界坐标系
                     let worldPosition = Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, position.height || 0);
-    
+
                     // 创建点和标签实体，使用世界坐标系
                     viewer.entities.add({
                         position: worldPosition,
@@ -3133,11 +2970,11 @@ let app = new Vue({
                 console.error('没有找到有效的三维坐标组或黄色折线数据组');
                 return;
             }
-        
+
             // 检查是否已经存在红色和黄色折线图层
             let redLayer = this.openlayersMap.getLayers().getArray().find(layer => layer.get('name') === '红色路径');
             let yellowLayer = this.openlayersMap.getLayers().getArray().find(layer => layer.get('name') === '黄色路径');
-        
+
             // 如果存在，先移除这两个图层
             if (redLayer || yellowLayer) {
                 if (redLayer) {
@@ -3150,37 +2987,37 @@ let app = new Vue({
                 }
                 return; // 移除后不再执行任何操作
             }
-        
+
             // 创建红色折线的二维坐标组
             let redCoordinates = [];
             for (let i = 0; i < anps.length; i++) {
                 let cartesian3 = anps[i];
-        
+
                 // 将笛卡尔坐标转换为经纬度坐标
                 let cartographic = Cesium.Cartographic.fromCartesian(cartesian3);
                 let longitude = Cesium.Math.toDegrees(cartographic.longitude);
                 let latitude = Cesium.Math.toDegrees(cartographic.latitude);
-        
+
                 // 将经纬度坐标转换为二维坐标（OpenLayers中的经纬度格式）
                 let coordinate = [longitude, latitude];
                 redCoordinates.push(coordinate);
             }
-        
+
             // 创建黄色折线的二维坐标组
             let yellowCoordinates = [];
             for (let i = 0; i < window.zuimei.length; i++) {
                 let cartesian3 = window.zuimei[i];
-        
+
                 // 将笛卡尔坐标转换为经纬度坐标
                 let cartographic = Cesium.Cartographic.fromCartesian(cartesian3);
                 let longitude = Cesium.Math.toDegrees(cartographic.longitude);
                 let latitude = Cesium.Math.toDegrees(cartographic.latitude);
-        
+
                 // 将经纬度坐标转换为二维坐标（OpenLayers中的经纬度格式）
                 let coordinate = [longitude, latitude];
                 yellowCoordinates.push(coordinate);
             }
-        
+
             // 在OpenLayers地图上分别添加红色折线和黄色折线
             if (this.openlayersMap && this.openlayersMap.addLayer) {
                 // 创建红色折线图层
@@ -3189,11 +3026,11 @@ let app = new Vue({
                     geometry: redLineString,
                     name: 'Red Line'
                 });
-        
+
                 let redVectorSource = new ol.source.Vector({
                     features: [redFeature]
                 });
-        
+
                 let redVectorLayer = new ol.layer.Vector({
                     source: redVectorSource,
                     style: new ol.style.Style({
@@ -3204,20 +3041,20 @@ let app = new Vue({
                     }),
                     name: '红色路径'
                 });
-        
+
                 this.openlayersMap.addLayer(redVectorLayer);
-        
+
                 // 创建黄色折线图层
                 let yellowLineString = new ol.geom.LineString(yellowCoordinates).transform('EPSG:4326', this.openlayersMap.getView().getProjection());
                 let yellowFeature = new ol.Feature({
                     geometry: yellowLineString,
                     name: 'Yellow Line'
                 });
-        
+
                 let yellowVectorSource = new ol.source.Vector({
                     features: [yellowFeature]
                 });
-        
+
                 let yellowVectorLayer = new ol.layer.Vector({
                     source: yellowVectorSource,
                     style: new ol.style.Style({
@@ -3228,63 +3065,24 @@ let app = new Vue({
                     }),
                     name: '黄色路径'
                 });
-        
+
                 this.openlayersMap.addLayer(yellowVectorLayer);
-        
+
                 console.log('红色折线图层和黄色折线图层已添加到地图');
             } else {
                 console.error('OpenLayers地图未初始化或不可用');
             }
         },
-        
-        changethree(){
+
+        changethree() {
             this.threeshow = !this.threeshow;
         },
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         // Fetch geom data from database and convert to Cesium coordinates
         async fetchAndConvertGeoms() {
             const tables = ['dormitories', 'classrooms', 'offices', 'cantings'];
-            
+
             // 检查是否已经存在模型
             if (this.wallEntities.length > 0) {
                 // 如果存在，删除已存在的模型
@@ -3295,11 +3093,11 @@ let app = new Vue({
                 console.log('已存在的模型已删除');
                 return; // 删除后不再执行任何操作
             }
-        
+
             tables.forEach(table => {
                 // 查询每个表的数据
                 const result = window.db.exec(`SELECT id, geom FROM ${table}`);
-            
+
                 if (result[0] && result[0].values) {
                     result[0].values.forEach(row => {
                         const id = row[0];
@@ -3312,55 +3110,55 @@ let app = new Vue({
                 }
             });
         },
-        
+
         // Convert array of [longitude, latitude] to Cesium Cartesian3
         convertToCesiumCoordinates(geom) {
-        return geom.map(coordSet => {
-            if (Array.isArray(coordSet)) {
-            return coordSet.map(coords => {
-                if (Array.isArray(coords) && coords.length === 2) {
-                const [longitude, latitude] = coords;
-                if (!isNaN(longitude) && !isNaN(latitude)) {
-                    return Cesium.Cartesian3.fromDegrees(longitude, latitude, 0); // Set height to 0
+            return geom.map(coordSet => {
+                if (Array.isArray(coordSet)) {
+                    return coordSet.map(coords => {
+                        if (Array.isArray(coords) && coords.length === 2) {
+                            const [longitude, latitude] = coords;
+                            if (!isNaN(longitude) && !isNaN(latitude)) {
+                                return Cesium.Cartesian3.fromDegrees(longitude, latitude, 0); // Set height to 0
+                            } else {
+                                console.error('Invalid coordinates:', coords);
+                                return null;
+                            }
+                        } else {
+                            console.error('Invalid coordinate pair:', coords);
+                            return null;
+                        }
+                    }).filter(coord => coord !== null);
                 } else {
-                    console.error('Invalid coordinates:', coords);
+                    console.error('Invalid coordinate set:', coordSet);
                     return null;
                 }
-                } else {
-                console.error('Invalid coordinate pair:', coords);
-                return null;
-                }
-            }).filter(coord => coord !== null);
-            } else {
-            console.error('Invalid coordinate set:', coordSet);
-            return null;
-            }
-        }).filter(coordSet => coordSet !== null);
+            }).filter(coordSet => coordSet !== null);
         },
-        
+
         // Convert Cartesian coordinates to Cesium Cartesian3
         convertToCesiumCartesian(x, y, z) {
-        return new Cesium.Cartesian3(x, y, z);
+            return new Cesium.Cartesian3(x, y, z);
         },
-        
+
         // Add wall to Cesium viewer
         addWall(cartesianCoordinates, id, buildingType) {
             // Flatten the nested arrays to create a single array of coordinates
             const flattenedCoordinates = cartesianCoordinates.flat();
-            
+
             // Ensure the wall forms a loop by adding the first point at the end
             flattenedCoordinates.push(flattenedCoordinates[0]);
-            
+
             // Convert Cartesian coordinates to Cartographic (lon, lat, height)
             const cartographicCoordinates = flattenedCoordinates.map(cartesian => {
                 return Cesium.Cartographic.fromCartesian(cartesian);
             });
-            
+
             // Convert Cartographic coordinates to Cesium Cartesian3
             const positions = cartographicCoordinates.map(cartographic => {
                 return Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, cartographic.height);
             });
-            
+
             // Set wall color based on buildingType
             let wallColor;
             switch (buildingType) {
@@ -3380,7 +3178,7 @@ let app = new Vue({
                     wallColor = Cesium.Color.RED.withAlpha(0.5);
                     break;
             }
-            
+
             // Create and add the wall
             const wallEntity = this.viewer.entities.add({
                 name: 'Generated Wall',
@@ -3395,10 +3193,10 @@ let app = new Vue({
                     buildingType: buildingType // Add the building type to the entity properties
                 }
             });
-            
+
             // Store the generated wall entity
             this.wallEntities.push(wallEntity);
-            
+
             // Adjust the camera view
             const firstPosition = cartographicCoordinates[0];
             this.viewer.camera.flyTo({
@@ -3406,7 +3204,7 @@ let app = new Vue({
                 duration: 2
             });
         },
-        
+
         // Clear existing walls and load new ones
         loadAndRenderWalls() {
             // Remove existing wall entities
@@ -3414,16 +3212,16 @@ let app = new Vue({
                 this.viewer.entities.remove(entity);
             });
             this.wallEntities = [];
-        
+
             // Fetch and render new walls
             this.fetchAndConvertGeoms();
         },
-        
+
         // Initialize Cesium viewer
         initializeCesium() {
             this.fetchAndConvertGeoms();
         },
-        
+
         createModel() {
             // this.modelEntity = this.viewer.entities.add({
             //   id: 'movingModel',
@@ -3449,63 +3247,58 @@ let app = new Vue({
                     minimumPixelSize: 64
                 }
             });
-          },
-          moveModelAlongPath() {
+        },
+        moveModelAlongPath() {
             const path = [
-              new Cesium.Cartesian3(-2291618.70, 5002790.58, 3214336.61),
-              new Cesium.Cartesian3(-2291676.42, 5002773.76, 3214322.16),
-              new Cesium.Cartesian3(-2291747.34, 5002739.69, 3214324.21),
-              new Cesium.Cartesian3(-2291729.21, 5002707.23, 3214387.39),
-              new Cesium.Cartesian3(-2291780.90, 5002669.82, 3214408.62),
-              new Cesium.Cartesian3(-2291767.45, 5002649.09, 3214449.59),
-              new Cesium.Cartesian3(-2291646.96, 5002709.38, 3214443.00)
+                new Cesium.Cartesian3(-2291618.70, 5002790.58, 3214336.61),
+                new Cesium.Cartesian3(-2291676.42, 5002773.76, 3214322.16),
+                new Cesium.Cartesian3(-2291747.34, 5002739.69, 3214324.21),
+                new Cesium.Cartesian3(-2291729.21, 5002707.23, 3214387.39),
+                new Cesium.Cartesian3(-2291780.90, 5002669.82, 3214408.62),
+                new Cesium.Cartesian3(-2291767.45, 5002649.09, 3214449.59),
+                new Cesium.Cartesian3(-2291646.96, 5002709.38, 3214443.00)
             ];
-      
+
             let currentIndex = 0;
             let time = Cesium.JulianDate.now();
             const speed = 10; // 设置移动速度
-      
+
             const positionProperty = new Cesium.SampledPositionProperty();
-      
+
             this.modelEntity.position = positionProperty;
-      
+
             const updatePosition = () => {
-              const currentPosition = path[currentIndex];
-              const nextIndex = (currentIndex + 1) % path.length;
-              const nextPosition = path[nextIndex];
-      
-              const distance = Cesium.Cartesian3.distance(currentPosition, nextPosition);
-              const timeInterval = distance / speed;
-      
-              time = Cesium.JulianDate.addSeconds(time, timeInterval, new Cesium.JulianDate());
-      
-              positionProperty.addSample(time, nextPosition);
-      
-              currentIndex = nextIndex;
-      
-              // 递归调用以持续移动模型
-              setTimeout(updatePosition, timeInterval * 1000);
+                const currentPosition = path[currentIndex];
+                const nextIndex = (currentIndex + 1) % path.length;
+                const nextPosition = path[nextIndex];
+
+                const distance = Cesium.Cartesian3.distance(currentPosition, nextPosition);
+                const timeInterval = distance / speed;
+
+                time = Cesium.JulianDate.addSeconds(time, timeInterval, new Cesium.JulianDate());
+
+                positionProperty.addSample(time, nextPosition);
+
+                currentIndex = nextIndex;
+
+                // 递归调用以持续移动模型
+                setTimeout(updatePosition, timeInterval * 1000);
             };
-      
+
             // 开始移动
             updatePosition();
-          },
-        
-
-
-
-
+        },
         expandLeft() {
             this.closePopup()
             this.leftWidth = (parseFloat(this.leftWidth) - 50).toFixed(2) + "%";
-            this.rightWidth =  (parseFloat(this.rightWidth) + 50).toFixed(2) + "%";
+            this.rightWidth = (parseFloat(this.rightWidth) + 50).toFixed(2) + "%";
             this.updateMap();
-            
+
         },
         expandRight() {
             this.closePopup()
             this.leftWidth = (parseFloat(this.leftWidth) + 50).toFixed(2) + "%";
-            this.rightWidth =  (parseFloat(this.rightWidth) - 50).toFixed(2) + "%";
+            this.rightWidth = (parseFloat(this.rightWidth) - 50).toFixed(2) + "%";
             this.updateMap();
         },
         realtime() {
@@ -3514,24 +3307,24 @@ let app = new Vue({
             this.updateMap();
         },
         updateMap() {
-            this.switchstatues=(parseInt(this.leftWidth)/50);
+            this.switchstatues = (parseInt(this.leftWidth) / 50);
             console.log(this.switchstatues);
 
             // 获取地图对象
             var openlayersMap = this.openlayersMap;
-    
+
             // 更新地图大小
             setTimeout(() => { // 添加一个延迟以确保DOM更新
                 openlayersMap.updateSize();
             }, 1000);
         },
-        roadpath(){
+        roadpath() {
             window.parent.document.location.href = 'widgets/tilescut/view.html'
         },
-        xdtxs(){
+        xdtxs() {
             this.isMapVisible = !this.isMapVisible;
         },
-        heatmapcon(){
+        heatmapcon() {
             console.log("heatmap显隐")
             // this.heatmapDataSource.show=!this.heatmapDataSource.show
             this.heatmapLayer.setVisible(!this.heatmapLayer.getVisible());
@@ -3539,13 +3332,13 @@ let app = new Vue({
         initialheatmap() {
             // 创建一个热力图数据源
             var heatmapSource = new ol.source.Vector();
-        
+
             // 添加热力图数据
             var minX = 114.61073854534085;
             var minY = 30.45780955332316;
             var maxX = 114.61675247242924;
             var maxY = 30.462376679452;
-        
+
             // 生成随机点
             for (var i = 0; i < 5000; i++) {
                 var randomLon = Math.random() * (maxX - minX) + minX;
@@ -3557,7 +3350,7 @@ let app = new Vue({
                 });
                 heatmapSource.addFeature(feature);
             }
-        
+
             // 创建一个热力图图层
             var heatmapLayer = new ol.layer.Heatmap({
                 source: heatmapSource,
@@ -3565,24 +3358,33 @@ let app = new Vue({
                 radius: 8, // 热力图半径
                 maxOpacity: 0.85, // 最大不透明度
                 minOpacity: 0.16,  //最小不透明度
-                weight: function(feature) {
+                weight: function (feature) {
                     return feature.get('weight');
                 },
-                name:"热力图1" 
+                name: "热力图1"
             });
-            this.heatmapLayer=heatmapLayer;
+            this.heatmapLayer = heatmapLayer;
             // 添加热力图图层到地图中
             this.openlayersMap.addLayer(heatmapLayer);
             this.heatmapLayer.setVisible(!this.heatmapLayer.getVisible());
         },
-        
-        
+        CamflyTo(x, y, z, heading, pitch, roll, duration) {
+            viewer.scene.camera.flyTo({
+                destination: new Cesium.Cartesian3(x, y, z),
+                orientation: {
+                    heading: heading,
+                    pitch: pitch,
+                    roll: roll
+                },
+                duration: duration
+            })
+        },
         // 左下角工具按钮点击事件
-        tooltipBoxClick () {
+        tooltipBoxClick() {
             this.tooltipAlertBool ? this.tooltipAlertBool = false : this.tooltipAlertBool = true
         },
         // 仿max缩放方法调用方法
-        scaleFun (bool) {
+        scaleFun(bool) {
             let win = document.getElementById("w0_window")
             let w0 = document.getElementById("w0")
             canvas = document.querySelector("#canvas-box")
@@ -3616,7 +3418,7 @@ let app = new Vue({
             }
         },
         // 多选框组change事件
-        checkboxChange () {
+        checkboxChange() {
             let spotCheckbox = this.spotCheckbox
             let hardwareCheckbox = this.hardwareCheckbox
             let publicCheckbox = this.publicCheckbox
@@ -3634,7 +3436,7 @@ let app = new Vue({
             })
         },
         // 多选框全选方法
-        allCheck () {
+        allCheck() {
             let arr1 = [], arr2 = [], arr3 = []
             for (let i = 0; i < this.spotData.length; i++) {
                 arr1.push(i)
@@ -3653,7 +3455,7 @@ let app = new Vue({
         },
 
         // 地球自转控制 bool-true开启 bool-false结束
-        earthRotate (bool) {
+        earthRotate(bool) {
             if (bool) {
                 viewer.clock.onTick.addEventListener(this.rotate)
             } else {
@@ -3661,7 +3463,7 @@ let app = new Vue({
             }
         },
         // 地球自转方法
-        rotate () {
+        rotate() {
             // console.log('执行自转')
             let a = .1
             let t = Date.now()
@@ -3670,7 +3472,7 @@ let app = new Vue({
             viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, -a * n)
         },
         // Map地图初始化方法
-        mapInit () {
+        mapInit() {
             console.log(Cesium.VERSION);
             Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MDZiODg5ZS0yMTYwLTQwNzgtODNkMi0xMjk5NzU1NDMzYTciLCJpZCI6MTM0MTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjMyNTQ1ODF9.ZSTW9uIkKQKW2hO3KsHdBRJ-udZ4tWMEChZCSslFTyw'
             // 初始化 Map 对象
@@ -3695,30 +3497,6 @@ let app = new Vue({
 
             // 清除默认的第一个影像 bing地图影像
             viewer.imageryLayers.remove(viewer.imageryLayers.get(0))
-            //arcGis影像
-            /*
-            let img = viewer.imageryLayers.addImageryProvider(
-                new Cesium.ArcGisMapServerImageryProvider({
-                    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
-                    baseLayerPicker: false
-                })
-            )
-            // 影像的亮度
-            img.brightness = 0.8
-            */
-
-            // // 天地图标注
-            // let label = viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
-            //     url: "http://t0.tianditu.com/cia_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=cia&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default.jpg" + "&tk=" + "19b72f6cde5c8b49cf21ea2bb4c5b21e",
-            //     layer: "tdtAnnoLayer",
-            //     style: "default",
-            //     maximumLevel: 18, // 天地图的最大缩放级别
-            //     format: "image/jpeg",
-            //     tileMatrixSetID: "GoogleMapsCompatible",
-            //     show: false
-            // }))
-            // // 影像的亮度
-            // label.brightness = 0.8
 
             viewer.scene.undergroundMode = false                                  // [ Bool , 设置开启地下场景 ]
             // viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50     // [ Number ,设置相机最小缩放距离,距离地表n米 ]
@@ -3739,12 +3517,12 @@ let app = new Vue({
                 //alert(dpr);
                 viewer.resolutionScale = vtxf_dpr;
             }
-//地图底图
+            //地图底图
             var arcLayer = mars3d.layer.createImageryProvider({
                 "type": "arcgis_cache",
                 "url": "/zjl/_alllayers/L{arc_z}/R{arc_y}/C{arc_x}.jpg",
                 "minimumLevel": 0,
-                "maximumLevel": 4, 
+                "maximumLevel": 4,
                 "rectangle": { "xmin": -180, "xmax": 180, "ymin": -90, "ymax": 90 },
             });
             viewer.imageryLayers.addImageryProvider(arcLayer);
@@ -3768,7 +3546,7 @@ let app = new Vue({
                 timeout: 0,
                 success: function (widgetCfg) {
                     haoutil.loading.hide();
-        
+
                     //url如果有传参时的处理
                     if (haoutil.isutil.isNotNull(request.widget)) {
                         if (request.onlyStart) widgetCfg.widgetsAtStart = [];
@@ -3781,12 +3559,12 @@ let app = new Vue({
                             request: request
                         });
                     }
-        
+
                     //初始化widget管理器
                     mars3d.widget.init(viewer, widgetCfg); //tip: 此方法有第3个参数支持定义父目录。 
 
-                    
-                    
+
+
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -3796,7 +3574,7 @@ let app = new Vue({
             });
 
 
-            
+
 
             // 加载3DTiles模型数据
             let tileset1 = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
@@ -3807,12 +3585,12 @@ let app = new Vue({
             let tileset2 = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
                 url: '/zjl/Data/3Dtiles/cesiumosgb/tileset.json'
             }))
-			
+
             // 地球自转开启
             this.earthRotate(true)
         },
         // 标识线绘制方法
-        addIdentificationLine (long, lat, height) {
+        addIdentificationLine(long, lat, height) {
             // 添加标识线
             viewer.entities.add({
                 name: "",
@@ -3831,7 +3609,7 @@ let app = new Vue({
             });
         },
         // 点绘制方法
-        addMarker (long, lat, height, billboard) {
+        addMarker(long, lat, height, billboard) {
             // 删除所有覆盖物
             // viewer.entities.removeAll()
             // 添加点
@@ -3843,7 +3621,7 @@ let app = new Vue({
             this.addIdentificationLine(long, lat, height)
         },
         // 多点绘制方法 dataArr-点信息集,billboard图标
-        addMarkers (dataArr, billboard) {
+        addMarkers(dataArr, billboard) {
             viewer.entities.removeAll()
             let position_arr = [], markerObj
 
@@ -3868,18 +3646,9 @@ let app = new Vue({
                 //this.access()
             })
 
-            // console.log(position_arr)
-            // 构建球并取中心点
-            // let polyCenter = Cesium.BoundingSphere.gromPoints(position_arr).center
-            // console.log(polyCenter)
-            // 中心点贴地偏移， 移到海拔为0
-            // polyCenter = Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter)
-            // console.log(polyCenter)
-
-            // this.flyToFun(-2450976.8164357054, 4571318.8577052, 3702844.70659926, true)
         },
         // 贴地线绘制方法
-        PolyLinePrimitive (item, opt) {
+        PolyLinePrimitive(item, opt) {
             let _update = function () {
                 return item.area
             }
@@ -3906,33 +3675,15 @@ let app = new Vue({
             return lineObj.id
         },
         // 贴地线多线绘制
-        PolyLinePrimitives (dataArr) {
+        PolyLinePrimitives(dataArr) {
             viewer.entities.removeAll()
             dataArr.map((item, i) => {
                 item.entities_id = this.PolyLinePrimitive(item)
             })
             //this.access()
         },
-        // 地球飞入方法
-        flyToFun (long, lat, height, bool) {
-            let destination
-            if (bool) {
-                destination = new Cesium.Cartesian3(long, lat, height)
-            } else {
-                destination = Cesium.Cartesian3.fromDegrees(long, lat, height)
-            }
-            viewer.scene.camera.flyTo({
-                destination: destination,
-                // orientation: {
-                //     heading: 6.249562695875667,
-                //     pitch: -0.7591125227828268,
-                //     roll: 6.283037537550086
-                // }
-            })
-        },
-
         // 引导动画
-        moveAnimation (bool) {
+        moveAnimation(bool) {
             return;
             let _this = this
             if (!bool) {
@@ -3954,7 +3705,7 @@ let app = new Vue({
                 return
             }
 
-            function callbackFun () {
+            function callbackFun() {
                 _this.moveTimerOut[0] = setTimeout(() => {
                     // 客流分析系统 共享车系统 停车系统
                     console.log(1)
@@ -4053,7 +3804,7 @@ let app = new Vue({
             }, 29000)
         },
         // 动态点
-        moveAddMarker (obj) {
+        moveAddMarker(obj) {
             removeDynamicLayer(viewer, { element: '#one' })
             if (obj.classId == 1) {
                 if (this.moveMarker1 != null) {
@@ -4196,13 +3947,13 @@ let app = new Vue({
             }, 1000)
         },
 
-        async realTimeCar () {
+        async realTimeCar() {
             let resa = await fetchAPI.get('./visual/bicycle/positionData.json', {})
             console.log(resa)
         },
 
         // 数据初始化
-        async dataInit () {
+        async dataInit() {
             // 附近景点接口数据
             let resa = await fetchAPI.get('./visual/scenic/indexdata.json', {})
             if (resa.code == 200) {
@@ -4363,77 +4114,27 @@ let app = new Vue({
             }
             setTimeout(() => { loading.close() }, 1000)
 
-            
+
         },
 
         //视频融合
-        videoFusion () {
-            // if(true==this.videoFusionFlag){
-            //     this.mapAuto = false;
-            //     this.moveAnimation(this.mapAuto);
-
-            //     videoElement = document.getElementById('trailer');
-            //     this.videoEntity = viewer.entities.add({
-            //         polygon: {
-            //             hierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArrayHeights([
-            //                 118.209777,35.705304,
-            //                 0,
-            //                 118.210185,35.705362,
-            //                 0,
-            //                 118.210161, 35.70551,
-            //                 0,
-            //                 118.209744, 35.705451,
-            //                 0,
-            //                 118.209777,35.705304,
-            //                 0
-            //             ])),
-            //             material: videoElement,
-            //             stRotation: Cesium.Math.toRadians(0),//视频旋转角度
-            //             perPositionHeight: false,
-            //             outline: false
-            //         }
-            //     });
-            //     videoElement.play();
-            //     viewer.mars.centerAt({"y":35.704888,"x":118.210016,"z":63.05,"heading":349.6,"pitch":-54,"roll":359.9});
-            //     $("#videoFusion").html("停车场(开)");
-            //     this.videoFusionFlag = false;
-            // }else{
-            //     videoElement.pause();;
-            //     viewer.entities.remove(this.videoEntity);
-            //     $("#videoFusion").html("停车场(关)");
-            //     this.videoFusionFlag = true;
-            // }
-                        //     this.moveAnimation(this.mapAuto);
-
-            // if(true==this.videoFusionFlag){
-            //     videoElement.play();
-            //     viewer.mars.centerAt({"y":35.704888,"x":118.210016,"z":63.05,"heading":349.6,"pitch":-54,"roll":359.9});
-            //     $("#videoFusion").html("停车场(开)");
-            //     this.videoFusionFlag = false;
-            // }else{
-            //     videoElement.pause();
-            //     viewer.entities.remove(this.videoEntity);
-            //     $("#videoFusion").html("停车场(关)");
-            //     this.videoFusionFlag = true;
-            // }
-
-            //viewer.mars.draw.hasEdit(true);
-            if($("#videoFusion").html()=="停车场(开)"){
+        videoFusion() {
+            if ($("#videoFusion").html() == "停车场(开)") {
                 this.videoElementm = document.getElementById('trailer');
                 viewer.entities.add({
                     polygon: {
                         hierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArrayHeights([
-                            118.20731,35.704592,
+                            118.20731, 35.704592,
                             0,
-                            118.207805,35.704619,
+                            118.207805, 35.704619,
                             0,
-                            118.207841,35.704592,
+                            118.207841, 35.704592,
                             0,
-                            118.207547,35.704383,
+                            118.207547, 35.704383,
                             0,
-                            118.207277,35.704431,
+                            118.207277, 35.704431,
                             0,
-                            118.20731,35.704592,
+                            118.20731, 35.704592,
                             0
                         ])),
                         material: this.videoElementm,
@@ -4444,48 +4145,23 @@ let app = new Vue({
                 });
                 document.getElementById('trailer').play();
                 $("#videoFusion").html("停车场(关)");
-                viewer.mars.centerAt({"y":35.70416,"x":118.207384,"z":127.62,"heading":2.4,"pitch":-74.2,"roll":0});
-            }else{
+                viewer.mars.centerAt({ "y": 35.70416, "x": 118.207384, "z": 127.62, "heading": 2.4, "pitch": -74.2, "roll": 0 });
+            } else {
                 document.getElementById('trailer').pause();
                 viewer.entities.removeAll();
                 $("#videoFusion").html("停车场(开)");
             }
-            
+
         },
 
-        
+
         //广告牌显示开关
-        switchons(){
+        switchons() {
             console.log("switchon")
-            /*viewer=this.viewer,
-            viewer.entities.add({
-                name: '标点',
-                position: Cesium.Cartesian3.fromDegrees(113.122717,23.028762,10),
-                label: { //文字标签
-                  text: "桥",
-                  font: '500 30px Helvetica',// 15pt monospace
-                  scale: 0.5,
-                  style: Cesium.LabelStyle.FILL,
-                  fillColor: Cesium.Color.WHITE,
-                  pixelOffset: new Cesium.Cartesian2(0, -75), //偏移量
-                  showBackground: true,
-                  backgroundColor: new Cesium.Color(0.5, 0.6, 1, 1.0)
-                },
-                billboard:{
-                    image: '/images/dibiao.png',
-                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                    scale: 0.5,
-                }
-            })*/
         },
 
     },
-    created () {
-        // 列表数据
-        //this.vehicleColumns = vehicleColumns(this)
-        //this.peopleColumns = peopleColumns(this)
-        // 数据初始化
+    created() {
         this.dataInit()
     }
 })
@@ -4524,7 +4200,7 @@ document.addEventListener('click', addRippleEffect, false)
  * @param  {String|Array} str  图片链接字符串|图片数组
  * @return {Array}             图片数组
  */
-function imagesFun (str) {
+function imagesFun(str) {
     if (Array.isArray(str)) {
         return str
     }
@@ -4544,7 +4220,7 @@ function imagesFun (str) {
  * @param  {Array}  arr     数组
  * @return {Array}          新数组
  */
-function keyUpdata (nkey, okey, arr) {
+function keyUpdata(nkey, okey, arr) {
     arr.map((item, i) => {
         return item[nkey] = item[okey]
     })
@@ -4555,7 +4231,7 @@ function keyUpdata (nkey, okey, arr) {
  * @param  {String} image    新键值
  * @param  { Fun }  callback    老键值
  */
-function imageCanvasBase64 (image, callback) {
+function imageCanvasBase64(image, callback) {
     let imgs = new Image()
     imgs.crossOrigin = "Anonymous" //注意存放顺序
     imgs.src = image
@@ -4577,7 +4253,7 @@ function imageCanvasBase64 (image, callback) {
  * @param  {String} keyWord  关键词
  * @return {Array,Array}     查询结果 {arr,tem} arr->搜索结果 tem->原数组改变序列
  */
-function fuzzyQuery (list, keyWord) {
+function fuzzyQuery(list, keyWord) {
     let reg = new RegExp(keyWord)
     let arr = [], tem = list
     let bool = false, childBool = false
@@ -4616,7 +4292,7 @@ function fuzzyQuery (list, keyWord) {
  * @param  {Object}  viewer  viewer实例对象
  * @param  {Object}  data    配置项
  */
-function addCircleRipple (viewer, data) {
+function addCircleRipple(viewer, data) {
     var r1 = data.minR, r2 = data.minR;
     if (viewer.entities.getById(data.id[0])) {
         viewer.entities.remove(viewer.entities.getById(data.id[0]))
@@ -4625,7 +4301,7 @@ function addCircleRipple (viewer, data) {
         viewer.entities.remove(viewer.entities.getById(data.id[1]))
     }
 
-    function changeR1 () { //这是callback，参数不能内传
+    function changeR1() { //这是callback，参数不能内传
         r1 = r1 + data.deviationR;
         if (r1 >= data.maxR) {
             r1 = data.minR;
@@ -4633,7 +4309,7 @@ function addCircleRipple (viewer, data) {
 
         return r1;
     }
-    function changeR2 () {
+    function changeR2() {
         r2 = r2 + data.deviationR;
         if (r2 >= data.maxR) {
             r2 = data.minR;
@@ -4689,7 +4365,7 @@ function addCircleRipple (viewer, data) {
  * @param  {String}  lat    维度
  * @param  {String}  height 高度
  */
-function addCircleRippleInit (long, lat, height) {
+function addCircleRippleInit(long, lat, height) {
     let data = {
         id: ["abcd-111", "abcd-222"],
         lon: long,
@@ -4707,7 +4383,7 @@ function addCircleRippleInit (long, lat, height) {
 /**
  * Date对象添加format原型方法 
  */
-function initFormatter () {
+function initFormatter() {
     Date.prototype.Format = function (fmt) { //
         let o = {
             "M+": this.getMonth() + 1,                 //月份
@@ -4805,7 +4481,7 @@ function awakenMove (_vm) {
 /**
  * 创建一个 htmlElement元素 并且，其在earth背后会自动隐藏
  */
-function creatHtmlElement (viewer, element, position, arr, flog) {
+function creatHtmlElement(viewer, element, position, arr, flog) {
     var ele = document.querySelector(element)
     var scratch = new Cesium.Cartesian2()  //cesium二维笛卡尔 笛卡尔二维坐标系就是我们熟知的而二维坐标系；三维也如此
     var scene = viewer.scene, camera = viewer.camera
@@ -4833,7 +4509,7 @@ function creatHtmlElement (viewer, element, position, arr, flog) {
 /**
  * 创建一个动态实体弹窗
  */
-function showDynamicLayer (viewer, data, callback) {
+function showDynamicLayer(viewer, data, callback) {
     var lon = data.lon, lat = data.lat
 
     var sStartFlog = false
@@ -4851,11 +4527,11 @@ function showDynamicLayer (viewer, data, callback) {
     if (data.addEntity) {
         var rotation = Cesium.Math.toRadians(30)
         var rotation2 = Cesium.Math.toRadians(30)
-        function getRotationValue () {
+        function getRotationValue() {
             rotation += 0.05
             return rotation
         }
-        function getRotationValue2 () {
+        function getRotationValue2() {
             rotation2 -= 0.03
             return rotation2
         }
@@ -4958,7 +4634,7 @@ function showDynamicLayer (viewer, data, callback) {
         addLayer() //添加div弹窗
     }
 
-    function addLayer () {
+    function addLayer() {
         //添加div
         var divPosition = Cesium.Cartesian3.fromDegrees(lon, lat, data.boxHeightMax) //data.boxHeightMax为undef也没事
         $("#one").css({ opacity: 1 })
@@ -4974,7 +4650,7 @@ function showDynamicLayer (viewer, data, callback) {
 /**
  * 移除动态弹窗 为了方便 这里的移除 是真的移除，因此 到时是需要重建弹窗的doom的
  */
-function removeDynamicLayer (viewer, data) {
+function removeDynamicLayer(viewer, data) {
     viewer.entities.removeById(data.layerId + "_1")
     viewer.entities.removeById(data.layerId + "_2")
     viewer.entities.removeById(data.layerId + "_3")
@@ -4992,7 +4668,7 @@ function removeDynamicLayer (viewer, data) {
  * @param p1 {Number} 结束点一
  * @param p2 {Number} 结束点二
  */
-function draw (s1, s2, p1, p2) {
+function draw(s1, s2, p1, p2) {
     let h = canvas.height
     let w = canvas.width
     ctx = canvas.getContext("2d")
@@ -5012,7 +4688,7 @@ function draw (s1, s2, p1, p2) {
  * @param speed {Number}
  * @param type 类型，放大或缩小 zoomin、zoomout
  */
-function clearRect (y, speed, type) {
+function clearRect(y, speed, type) {
     ctx = canvas.getContext("2d")
     if (type === "zoomout") {
         ctx.clearRect(0, y, canvas.width, speed);
@@ -5028,7 +4704,7 @@ function clearRect (y, speed, type) {
  * @param p2 {Number} 结束点二
  * @param type {String} 类型，放大或缩小 zoomin、zoomout
  */
-function scale (s1, s2, p1, p2, type, callback) {
+function scale(s1, s2, p1, p2, type, callback) {
     var h = canvas.height
     var dist1 = Math.abs(p1 - s1);
     var dist2 = Math.abs(p2 - s2);
@@ -5099,7 +4775,7 @@ function scale (s1, s2, p1, p2, type, callback) {
 /**
  * (流动)折线
  * */
-function creatBrokenLine (viewer, data) {
+function creatBrokenLine(viewer, data) {
     if (data.flowing == true) {
         initPolylineTrailLinkMaterialProperty(data);
         var str1 = data.options.polyline.material[0];
@@ -5123,8 +4799,8 @@ function creatBrokenLine (viewer, data) {
 }
 
 //流动特效
-function initPolylineTrailLinkMaterialProperty (data) {
-    function PolylineTrailLinkMaterialProperty (color, duration) {
+function initPolylineTrailLinkMaterialProperty(data) {
+    function PolylineTrailLinkMaterialProperty(color, duration) {
         this._definitionChanged = new Cesium.Event();
         this._color = undefined;
         this._colorSubscription = undefined;
@@ -5213,7 +4889,7 @@ function initPolylineTrailLinkMaterialProperty (data) {
     function removeMask() {
         $("#mask").remove();
     }
-    
+
 
     var viewer;
 
@@ -5386,7 +5062,7 @@ function initPolylineTrailLinkMaterialProperty (data) {
             flatObj.b3dmOffset = new Cesium.Cartesian2(xx, yy);
         });
 
-        
+
         $("#chkHasOffset").change(function () {
             var val = $(this).is(':checked');
 
@@ -5398,10 +5074,10 @@ function initPolylineTrailLinkMaterialProperty (data) {
 
 
     }
-/*
-window.onload=function(){
-    window.vi=viewer;
-}*/
+    /*
+    window.onload=function(){
+        window.vi=viewer;
+    }*/
 
 
 

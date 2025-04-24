@@ -25,7 +25,7 @@ function loadArcheryClub() {
       viewer.addGaussianSplatLayer(targetLayer);
     }
   });
-  // viewer.addGaussianSplatLayer(targetLayer);
+  viewer.addGaussianSplatLayer(targetLayer);
   // viewer.addGaussianSplatLayer(buildingLayer);
 }
 
