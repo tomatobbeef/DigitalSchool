@@ -387,11 +387,28 @@ ul{
 	width: 100%;
 	overflow: hidden;
 }
-#openlayersMap, #cesiumMap {
+#openlayersMap{
 	width: 50%;
 	height: 100%;
 	transition: width 0.5s ease; /* 添加过渡效果 */
 	overflow: hidden;
+}
+#cesiumMap {
+	position: absolute;
+	right: 0;
+	width: 50%;
+	height: 100%;
+	transition: width 0.5s ease; /* 添加过渡效果 */
+	overflow: hidden;
+	z-index: 0;
+}
+#three{
+	position: absolute;
+	right: 0;
+	width: 50%;
+	height: 100%;
+	z-index: 1;
+	pointer-events: none;
 }
 #buttonContainer {
 	display: flex;

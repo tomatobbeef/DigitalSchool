@@ -1386,8 +1386,6 @@ let app = new Vue({
             viewer = new Cesium.Viewer('cesiumMap');
             this.viewer = viewer;
             // var webGlobe = new Cesium3DTile.WebSceneControl('GlobeView',{showInfo:true});
-            console.log(viewer);
-
             viewer.shouldAnimate = true,               // [ Bool, 是否开启动画 ]
                 viewer.requestRenderMode = true,            // [ Bool, 启用请求渲染模式 ]
                 viewer.scene3DOnly = false,                 // [ Bool, 每个几何实例将只能以3D渲染以节省GPU内存 ]
@@ -1407,9 +1405,6 @@ let app = new Vue({
             viewer.scene.light.intensity = 1.0;
             // viewer.scene.shadowMap.softShadows = true;
             viewer.scene.shadowMap.darkness = 0.5;
-            viewer.skyBox = false;
-            viewer.camera.contrastBias = 5; // 增加对比度
-            viewer.camera.exposure = 1.0; // 增加曝光
 
 
             viewer.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({
@@ -1617,7 +1612,7 @@ let app = new Vue({
             });
 
             //加载three
-            threeOverlay = new ThreeOverlay(this.viewer.camera);
+            threeOverlay = new ThreeOverlay(viewer.camera);
             viewer.scene.postRender.addEventListener(() => {
                 threeOverlay.render();
             });
@@ -1649,10 +1644,10 @@ let app = new Vue({
             peo();
             const targetLayer = new GaussianSplatLayer(
                 "./src/assets/model/enviroment.splat",
-                { lon: 114.62463, lat: 30.462502, height: 0 },
+                { lon: 114.62463, lat: 30.462502, height: 100 },
                 { x: 0.799985294426387, y: -0.561475491622485, z: 2.430876453678189 }
             );
-            threeOverlay.addGaussianSplatLayer(targetLayer);
+            
             this.dataSet()
             setTimeout(() => {
                 // 地球自转结束
@@ -1740,6 +1735,7 @@ let app = new Vue({
             }, 500)
             document.addEventListener("keydown", function (event) {
                 if (event.key === "q") {
+                    threeOverlay.addGaussianSplatLayer(targetLayer);
                     const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
 
                     // 指定摄像机的位置（相对于目标点的偏移量）
