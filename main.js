@@ -4,10 +4,13 @@
 // const { types } = require("util")
 
 // const { Cesium3DTile } = require("./mapgis/cdn/cesium/Cesium")
-import { GaussianSplatLayer } from "./src/tools/3dgs/gaussian-splat-layer.js";
-import { ThreeOverlay } from "./src/tools/3dgs/three-overlay.js";
+import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls
 
 var viewer               // [ Object, 地图对象 ]
+var threeviewer        //three对象
+var controls
 var viewer2d               // [ Object, 地图对象 ]
 let nowI = Date.now()               // [ Number, 当前时间戳-毫秒级 ]
 var canvas = null                   // [ Object, canvas对象 ]
@@ -1381,6 +1384,74 @@ let app = new Vue({
                 this.$Message.error(res.msg)
             }
         },
+        //渲染高斯场景
+        renderThree() {
+
+             // 获取已有的 div 元素
+            const rootElement = document.getElementById('three');
+
+            // 动态获取容器的宽高
+            const { width: renderWidth, height: renderHeight } = rootElement.getBoundingClientRect();
+
+            const renderer = new THREE.WebGLRenderer({
+            antialias: false
+            });
+            renderer.setSize(renderWidth, renderHeight);
+
+            // 将渲染器的 canvas 添加到已有的 div 中
+            rootElement.appendChild(renderer.domElement);
+
+
+            const camera = new THREE.PerspectiveCamera(65, renderWidth / renderHeight, 0.1, 500);
+            camera.position.copy(new THREE.Vector3().fromArray([-1, -4, 6]));
+            camera.up = new THREE.Vector3().fromArray([0, -1, -0.6]).normalize();
+            camera.lookAt(new THREE.Vector3().fromArray([0, 4, 0]));
+
+            threeviewer = new GaussianSplats3D.Viewer({
+                selfDrivenMode: false,
+                renderer: renderer,
+                camera: camera,
+                useBuiltInControls: false,
+                ignoreDevicePixelRatio: false,
+                gpuAcceleratedSort: true,
+                enableSIMDInSort: true,
+                sharedMemoryForWorkers: true,
+                integerBasedSort: true,
+                halfPrecisionCovariancesOnGPU: true,
+                dynamicScene: false,
+                webXRMode: GaussianSplats3D.WebXRMode.None,
+                renderMode: GaussianSplats3D.RenderMode.OnChange,
+                sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant,
+                antialiased: false,
+                focalAdjustment: 1.0,
+                logLevel: GaussianSplats3D.LogLevel.None,
+                sphericalHarmonicsDegree: 0,
+                enableOptionalEffects: false,
+                inMemoryCompressionLevel: 2,
+                freeIntermediateSplatData: false,
+                sharedMemoryForWorkers: false
+            });
+
+            // 添加 OrbitControls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // 启用阻尼效果
+            controls.dampingFactor = 0.25; // 阻尼系数
+            controls.enableZoom = true; // 启用缩放
+            controls.enableRotate = true; // 启用旋转
+            controls.enablePan = true; // 启用平移
+
+            threeviewer.addSplatScene('http://localhost:5173/src/assets/model/enviroment.splat')
+                .then(() => {
+                    requestAnimationFrame(this.update);
+                });
+        },
+        // 定义 update 函数（示例）
+        update() {
+            threeviewer.update();
+            threeviewer.render();
+            controls.update(); // 更新 OrbitControls
+            requestAnimationFrame(this.update);
+        },
         kaishi() {
             window.db = null;
             viewer = new Cesium.Viewer('cesiumMap');
@@ -1611,12 +1682,6 @@ let app = new Vue({
                 });
             });
 
-            //加载three
-            threeOverlay = new ThreeOverlay(viewer.camera);
-            viewer.scene.postRender.addEventListener(() => {
-                threeOverlay.render();
-            });
-
         },
         // 进入地图方法
         access() {
@@ -1642,11 +1707,7 @@ let app = new Vue({
             pnum = Math.floor(Math.random() * 2000) + 6000;
             pnumel.innerHTML = String(pnum) + "人";
             peo();
-            const targetLayer = new GaussianSplatLayer(
-                "./src/assets/model/enviroment.splat",
-                { lon: 114.62463, lat: 30.462502, height: 100 },
-                { x: 0.799985294426387, y: -0.561475491622485, z: 2.430876453678189 }
-            );
+            
             
             this.dataSet()
             setTimeout(() => {
@@ -1735,7 +1796,6 @@ let app = new Vue({
             }, 500)
             document.addEventListener("keydown", function (event) {
                 if (event.key === "q") {
-                    threeOverlay.addGaussianSplatLayer(targetLayer);
                     const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
 
                     // 指定摄像机的位置（相对于目标点的偏移量）
@@ -1748,9 +1808,12 @@ let app = new Vue({
                     // 使用lookAt方法移动摄像机
                     viewer.scene.camera.lookAt(target, offset);
 
+
                 }
             });
-
+            document.getElementById('cesiumMap').style.display = 'none'; // 隐藏
+            document.getElementById('three').style.display = 'block'; // 显示
+            this.renderThree();
         },
 
         // swiper组件初始化
