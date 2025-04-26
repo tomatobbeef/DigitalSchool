@@ -1794,26 +1794,26 @@ let app = new Vue({
                 water();
                 //viewer.flyTo(x);
             }, 500)
-            document.addEventListener("keydown", function (event) {
-                if (event.key === "q") {
-                    const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
+            // document.addEventListener("keydown", function (event) {
+            //     if (event.key === "q") {
+            //         const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
 
-                    // 指定摄像机的位置（相对于目标点的偏移量）
-                    const offset = new Cesium.HeadingPitchRange(
-                        Cesium.Math.toRadians(0), // 方向（朝向角度）
-                        Cesium.Math.toRadians(-90), // 倾斜角度
-                        100 // 距离目标点的距离（米）
-                    );
+            //         // 指定摄像机的位置（相对于目标点的偏移量）
+            //         const offset = new Cesium.HeadingPitchRange(
+            //             Cesium.Math.toRadians(0), // 方向（朝向角度）
+            //             Cesium.Math.toRadians(-90), // 倾斜角度
+            //             100 // 距离目标点的距离（米）
+            //         );
 
-                    // 使用lookAt方法移动摄像机
-                    viewer.scene.camera.lookAt(target, offset);
+            //         // 使用lookAt方法移动摄像机
+            //         viewer.scene.camera.lookAt(target, offset);
 
 
-                }
-            });
-            document.getElementById('cesiumMap').style.display = 'none'; // 隐藏
-            document.getElementById('three').style.display = 'block'; // 显示
-            this.renderThree();
+            //     }
+            // });
+            // document.getElementById('cesiumMap').style.display = 'none'; // 隐藏
+            // document.getElementById('three').style.display = 'block'; // 显示
+            // this.renderThree();
         },
 
         // swiper组件初始化
