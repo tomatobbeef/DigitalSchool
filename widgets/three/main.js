@@ -1,8 +1,8 @@
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const rootElement = document.getElementById('threemap');
+const rootElement = document.getElementById('three');
 
 // 动态获取容器的宽高
 const { width: renderWidth, height: renderHeight } = rootElement.getBoundingClientRect();
@@ -15,21 +15,29 @@ renderer.setSize(renderWidth, renderHeight);
 // 将渲染器的 canvas 添加到已有的 div 中
 rootElement.appendChild(renderer.domElement);
 
+const scene = new THREE.Scene(); // 创建一个 Three.js 场景
 
 const camera = new THREE.PerspectiveCamera(65, renderWidth / renderHeight, 0.1, 500);
-camera.position.copy(new THREE.Vector3().fromArray([-1, -4, 6]));
-camera.up = new THREE.Vector3().fromArray([0, -1, -0.6]).normalize();
-camera.lookAt(new THREE.Vector3().fromArray([0, 4, 0]));
+camera.position.set(0, 0, 5); // 调整相机位置
+camera.up.set(0, -1, 0); // 设置相机的“上”方向为 Y 轴
+camera.lookAt(scene.position); // 相机指向场景中心
 
-const viewer = new GaussianSplats3D.Viewer({
+// 添加光源
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // 环境光
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // 平行光
+directionalLight.position.set(1, 1, 1);
+scene.add(directionalLight);
+
+const threeviewer = new GaussianSplats3D.Viewer({
     selfDrivenMode: false,
     renderer: renderer,
     camera: camera,
     useBuiltInControls: false,
     ignoreDevicePixelRatio: false,
-    gpuAcceleratedSort: true,
-    enableSIMDInSort: true,
-    sharedMemoryForWorkers: true,
+    gpuAcceleratedSort: false, // 关闭 GPU 加速排序
+    sharedMemoryForWorkers: false, // 关闭共享内存
     integerBasedSort: true,
     halfPrecisionCovariancesOnGPU: true,
     dynamicScene: false,
@@ -42,25 +50,25 @@ const viewer = new GaussianSplats3D.Viewer({
     sphericalHarmonicsDegree: 0,
     enableOptionalEffects: false,
     inMemoryCompressionLevel: 2,
-    freeIntermediateSplatData: false,
-    sharedMemoryForWorkers: false
+    freeIntermediateSplatData: false
 });
 
 // 添加 OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; // 启用阻尼效果
-controls.dampingFactor = 0.25; // 阻尼系数
-controls.enableZoom = true; // 启用缩放
-controls.enableRotate = true; // 启用旋转
-controls.enablePan = true; // 启用平移
+controls.enableDamping = true;
+controls.dampingFactor = 0.25;
+controls.enableZoom = true;
+controls.enableRotate = true;
+controls.enablePan = true;
 
-viewer.addSplatScene('http://localhost:5173/src/assets/model/enviroment.splat')
+threeviewer.addSplatScene('http://localhost:5173/public/data/enviroment.splat')
     .then(() => {
         requestAnimationFrame(update);
     });
+
 function update() {
     threeviewer.update();
     threeviewer.render();
-    controls.update(); // 更新 OrbitControls
+    controls.update();
     requestAnimationFrame(update);
 }
