@@ -189,11 +189,11 @@
                 <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
                 <button id="buttonright" @click="expandRight">&gt;&gt;</button>
             </div>
-            <div id="three" :style="{ width: rightWidth }"></div>
+            <iframe src="./widgets/three/index.html" id="three" :style="{ width: rightWidth }"></iframe>
             <div id="cesiumMap" :style="{ width: rightWidth }"></div>
         </div>
 
-        <!-- swiper图片预览模块 -->
+        <!-- swiper图片预览模块 --> 
         <div class="swiper-box" v-if="swiperImgBool">
             <div class="swiper-close-btn btn" @click="closeSwiperBox"
                 style="border: 1px solid #56FFFF;font-size: 1vw;font-weight: 600;">关闭</div>

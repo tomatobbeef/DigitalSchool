@@ -4,13 +4,8 @@
 // const { types } = require("util")
 
 // const { Cesium3DTile } = require("./mapgis/cdn/cesium/Cesium")
-import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls
 
 var viewer               // [ Object, 地图对象 ]
-var threeviewer        //three对象
-var controls
 var viewer2d               // [ Object, 地图对象 ]
 let nowI = Date.now()               // [ Number, 当前时间戳-毫秒级 ]
 var canvas = null                   // [ Object, canvas对象 ]
@@ -47,7 +42,7 @@ function kpr(event) {
 
 //穿透室内
 function toindoor() {
-    window.parent.toIndoor();
+    
 }
 
 
@@ -1384,74 +1379,6 @@ let app = new Vue({
                 this.$Message.error(res.msg)
             }
         },
-        //渲染高斯场景
-        renderThree() {
-
-             // 获取已有的 div 元素
-            const rootElement = document.getElementById('three');
-
-            // 动态获取容器的宽高
-            const { width: renderWidth, height: renderHeight } = rootElement.getBoundingClientRect();
-
-            const renderer = new THREE.WebGLRenderer({
-            antialias: false
-            });
-            renderer.setSize(renderWidth, renderHeight);
-
-            // 将渲染器的 canvas 添加到已有的 div 中
-            rootElement.appendChild(renderer.domElement);
-
-
-            const camera = new THREE.PerspectiveCamera(65, renderWidth / renderHeight, 0.1, 500);
-            camera.position.copy(new THREE.Vector3().fromArray([-1, -4, 6]));
-            camera.up = new THREE.Vector3().fromArray([0, -1, -0.6]).normalize();
-            camera.lookAt(new THREE.Vector3().fromArray([0, 4, 0]));
-
-            threeviewer = new GaussianSplats3D.Viewer({
-                selfDrivenMode: false,
-                renderer: renderer,
-                camera: camera,
-                useBuiltInControls: false,
-                ignoreDevicePixelRatio: false,
-                gpuAcceleratedSort: true,
-                enableSIMDInSort: true,
-                sharedMemoryForWorkers: true,
-                integerBasedSort: true,
-                halfPrecisionCovariancesOnGPU: true,
-                dynamicScene: false,
-                webXRMode: GaussianSplats3D.WebXRMode.None,
-                renderMode: GaussianSplats3D.RenderMode.OnChange,
-                sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant,
-                antialiased: false,
-                focalAdjustment: 1.0,
-                logLevel: GaussianSplats3D.LogLevel.None,
-                sphericalHarmonicsDegree: 0,
-                enableOptionalEffects: false,
-                inMemoryCompressionLevel: 2,
-                freeIntermediateSplatData: false,
-                sharedMemoryForWorkers: false
-            });
-
-            // 添加 OrbitControls
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; // 启用阻尼效果
-            controls.dampingFactor = 0.25; // 阻尼系数
-            controls.enableZoom = true; // 启用缩放
-            controls.enableRotate = true; // 启用旋转
-            controls.enablePan = true; // 启用平移
-
-            threeviewer.addSplatScene('http://localhost:5173/src/assets/model/enviroment.splat')
-                .then(() => {
-                    requestAnimationFrame(this.update);
-                });
-        },
-        // 定义 update 函数（示例）
-        update() {
-            threeviewer.update();
-            threeviewer.render();
-            controls.update(); // 更新 OrbitControls
-            requestAnimationFrame(this.update);
-        },
         kaishi() {
             window.db = null;
             viewer = new Cesium.Viewer('cesiumMap');
@@ -1794,26 +1721,6 @@ let app = new Vue({
                 water();
                 //viewer.flyTo(x);
             }, 500)
-            // document.addEventListener("keydown", function (event) {
-            //     if (event.key === "q") {
-            //         const target = Cesium.Cartesian3.fromDegrees(114.62463, 30.462502);
-
-            //         // 指定摄像机的位置（相对于目标点的偏移量）
-            //         const offset = new Cesium.HeadingPitchRange(
-            //             Cesium.Math.toRadians(0), // 方向（朝向角度）
-            //             Cesium.Math.toRadians(-90), // 倾斜角度
-            //             100 // 距离目标点的距离（米）
-            //         );
-
-            //         // 使用lookAt方法移动摄像机
-            //         viewer.scene.camera.lookAt(target, offset);
-
-
-            //     }
-            // });
-            // document.getElementById('cesiumMap').style.display = 'none'; // 隐藏
-            // document.getElementById('three').style.display = 'block'; // 显示
-            // this.renderThree();
         },
 
         // swiper组件初始化
@@ -3282,18 +3189,6 @@ let app = new Vue({
         },
 
         createModel() {
-            // this.modelEntity = this.viewer.entities.add({
-            //   id: 'movingModel',
-            //   position: new Cesium.Cartesian3(-2291750.83,5002740.58,3214320.27),
-            //   model: {
-            //     uri: 'CesiumMilkTruck/CesiumMilkTruck.glb',
-            //     minimumPixelSize: 45,
-            //     maximumScale: 45,
-            //     scale: 1,
-            //   },
-            //   show: true
-            // });
-            // 在指定位置创建笛卡尔坐标
             const position = new Cesium.Cartesian3(-2291618.70, 5002790.58, 3214336.61);
 
             // 创建实体
@@ -3427,15 +3322,14 @@ let app = new Vue({
             this.openlayersMap.addLayer(heatmapLayer);
             this.heatmapLayer.setVisible(!this.heatmapLayer.getVisible());
         },
-        CamflyTo(x, y, z, heading, pitch, roll, duration) {
+        CamflyTo(x,y,z,heading,pitch,roll) {
             viewer.scene.camera.flyTo({
-                destination: new Cesium.Cartesian3(x, y, z),
+                destination: new Cesium.Cartesian3(x,y,z),
                 orientation: {
                     heading: heading,
                     pitch: pitch,
                     roll: roll
-                },
-                duration: duration
+                }
             })
         },
         // 左下角工具按钮点击事件
@@ -3767,7 +3661,6 @@ let app = new Vue({
             function callbackFun() {
                 _this.moveTimerOut[0] = setTimeout(() => {
                     // 客流分析系统 共享车系统 停车系统
-                    console.log(1)
                     viewer.scene.camera.flyTo({
                         destination: new Cesium.Cartesian3(-2451159.5868161586, 4569290.571021583, 3701754.3560328917),
                         orientation: {
@@ -4227,9 +4120,6 @@ let app = new Vue({
 
 window.appk = app;
 
-
-
-
 // 按钮点击波纹方法
 let addRippleEffect = function (e) {
     let target = e.target
@@ -4463,79 +4353,6 @@ function initFormatter() {
 }
 initFormatter()
 
-/** 
- * 监听地图点击事件
-
-var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
-handler.setInputAction(function (movement) {
-    console.log(viewer.camera.heading)
-    console.log(viewer.camera.pitch)
-    console.log(viewer.camera.roll)
-    console.log(viewer.camera.position)
-
-    var pick = viewer.scene.pick(movement.position)
-
-    var cartesian = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid)
-    var cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-    var lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5)
-    var lat = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5)
-    console.log(lon, lat)
-    if (pick && pick.id) {
-        console.log(pick.id)
-        // console.log(app.spotData)
-        // console.log(app.publicAreaData)
-        // console.log(app.hardwareData)
-
-        var data = {
-            layerId: "layer1",       // 英文，且唯一,内部entity会用得到
-            lon: lon,
-            lat: lat,
-            element: '#one',
-            addEntity: false,        // 默认为false,如果为false的话就不添加实体，后面的实体属性就不需要了，这个时候 boxHeightMax可要可不要。它代表弹窗起始点的地理坐标高度
-            boxHeight: 0,            // 中间立方体的高度
-            boxHeightDif: 10,        // 中间立方体的高度增长差值，越大增长越快
-            boxHeightMax: 0,         // 中间立方体的最大高度
-            boxSide: 0,              // 立方体的边长
-            boxMaterial: Cesium.Color.DEEPSKYBLUE.withAlpha(0.5),
-            circleSize: 0,           // 大圆的大小，小圆的大小默认为一半
-        };
-
-        showDynamicLayer(viewer, data, function () { // 回调函数 改变弹窗的内容;
-            let name = app.textSubstr(pick.id.name, 10)
-            let content = '暂无内容'
-            if (pick.id.describe_content && pick.id.describe_content != '') {
-                content = pick.id.describe_content
-                content = content.replace(/&nbsp;/g, "")
-                content = content.replace(/<[^>]+>/g, "")
-            }
-            // $(data.element).find(".main_tit").html(name)
-            $(data.element).find(".main_tit").html('名称：' + name)
-            $(data.element).find(".main_con").html('描述：' + content)
-        });
-    }else{
-        $("#tip").hide();
-    }
-}, Cesium.ScreenSpaceEventType.LEFT_CLICK)
-
-handler.setInputAction(function (movement) {
-    console.log('按下')
-    awakenMove(app)
-}, Cesium.ScreenSpaceEventType.LEFT_DOWN)
-
-function awakenMove (_vm) {
-    _vm.moveAnimation(false)
-    if (_vm.hisTimer != null) {
-        clearTimeout(_vm.hisTimer)
-    }
-    if (_vm.mapAuto) {
-        _vm.hisTimer = setTimeout(() => {
-            _vm.moveAnimation(true)
-        }, 20000)
-    } else {
-        clearTimeout(_vm.hisTimer)
-    }
-}
-*/
 
 /**
  * 创建一个 htmlElement元素 并且，其在earth背后会自动隐藏
