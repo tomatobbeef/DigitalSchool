@@ -38,7 +38,13 @@ window.onload = function () {
             var selectedData = jsonData.V[selectedIndex];
             console.log("选中的数据：", selectedData);
             // 在这里可以根据selectedData执行后续操作
-            alert("您选择了：" + selectedData.position);
+            // 向父页面发送消息
+            window.parent.postMessage({
+                action: 'indoor', // 指定要调用的父页面方法
+                payload: {
+                    position: selectedData.position,
+                }
+            }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
         }
     });
 };

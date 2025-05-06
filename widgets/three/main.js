@@ -2,7 +2,7 @@ import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const rootElement = document.getElementById('three');
+const rootElement = document.getElementById('threemap');
 
 // 动态获取容器的宽高
 const { width: renderWidth, height: renderHeight } = rootElement.getBoundingClientRect();
@@ -61,7 +61,7 @@ controls.enableZoom = true;
 controls.enableRotate = true;
 controls.enablePan = true;
 
-threeviewer.addSplatScene('http://localhost:5173/public/data/enviroment.splat')
+threeviewer.addSplatScene('http://localhost:5173/src/assets/model/enviroment.splat')
     .then(() => {
         requestAnimationFrame(update);
     });
@@ -72,3 +72,10 @@ function update() {
     controls.update();
     requestAnimationFrame(update);
 }
+
+window.updateThreeJS = function() {
+    const { width: newWidth, height: newHeight } = rootElement.getBoundingClientRect();
+    renderer.setSize(newWidth, newHeight);
+    camera.aspect = newWidth / newHeight;
+    camera.updateProjectionMatrix();
+};

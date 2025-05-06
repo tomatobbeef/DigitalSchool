@@ -21,7 +21,7 @@ var zizhuan;
 var fixedHeight = 500;
 let cameraPointEntity = null;
 var layer;
-var threeOverlay;
+
 function peo() {
     pnumel = document.getElementById("people");
     pnum += Math.floor(Math.random() * 11) - 5;
@@ -42,7 +42,7 @@ function kpr(event) {
 
 //穿透室内
 function toindoor() {
-    
+
 }
 
 
@@ -174,7 +174,6 @@ let app = new Vue({
         wallEntities: [],
         modelEntity: null,
         placepoint: null, // 存放显示的点和文字的实体集合
-        threeshow: false,
         zIndex: 2,
 
 
@@ -1492,6 +1491,10 @@ let app = new Vue({
                         // window.appk.moveModelAlongPath();
                         break
                     }
+                    case "q": {
+                        console.log("当前相机位置：", camera.position);
+                        break
+                    }
                     case "k": {
                         var head = camera.heading;
                         var pitch = camera.pitch;
@@ -1609,6 +1612,38 @@ let app = new Vue({
                 });
             });
 
+            // 监听来自 iframe 的消息
+            window.addEventListener('message', function (event) {
+                // 检查来源是否安全（可选）
+                // if (event.origin !== 'http://example.com') return;
+
+                // 获取消息内容
+                const data = event.data;
+                const position = data.payload.position
+                // 根据消息内容调用 Vue 实例中的方法
+                if (data.action === 'indoor') {
+                    viewer.scene.camera.flyTo({
+                        destination: new Cesium.Cartesian3(position[0], position[1], position[2]), // 世界坐标点
+                        orientation: {
+                            heading: 4.6784159152452865,
+                            pitch: -0.2199005710200699,
+                            roll: 6.278964574356454
+                        },
+                        duration: 3 // 飞行持续时间
+                    }) 
+                    setTimeout(function() {
+                        document.getElementById("cesiumMap").style.display = "none";
+                        const iframe = document.getElementById("three");
+                        // iframe.onload = () => {
+                        //     // 调用 iframe 内部的更新方法
+                        //     iframe.contentWindow.updateThreeJS();
+                        // };
+            
+                        iframe.style.display = "block";
+                    }, 3500); // 延迟 3000 毫秒（3 秒）
+                }
+            });
+
         },
         // 进入地图方法
         access() {
@@ -1634,8 +1669,8 @@ let app = new Vue({
             pnum = Math.floor(Math.random() * 2000) + 6000;
             pnumel.innerHTML = String(pnum) + "人";
             peo();
-            
-            
+
+
             this.dataSet()
             setTimeout(() => {
                 // 地球自转结束
@@ -3040,10 +3075,6 @@ let app = new Vue({
             }
         },
 
-        changethree() {
-            this.threeshow = !this.threeshow;
-        },
-
 
         // Fetch geom data from database and convert to Cesium coordinates
         async fetchAndConvertGeoms() {
@@ -3322,9 +3353,9 @@ let app = new Vue({
             this.openlayersMap.addLayer(heatmapLayer);
             this.heatmapLayer.setVisible(!this.heatmapLayer.getVisible());
         },
-        CamflyTo(x,y,z,heading,pitch,roll) {
+        CamflyTo(x, y, z, heading, pitch, roll) {
             viewer.scene.camera.flyTo({
-                destination: new Cesium.Cartesian3(x,y,z),
+                destination: new Cesium.Cartesian3(x, y, z),
                 orientation: {
                     heading: heading,
                     pitch: pitch,
