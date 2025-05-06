@@ -1634,12 +1634,11 @@ let app = new Vue({
                     setTimeout(function() {
                         document.getElementById("cesiumMap").style.display = "none";
                         const iframe = document.getElementById("three");
-                        // iframe.onload = () => {
-                        //     // 调用 iframe 内部的更新方法
-                        //     iframe.contentWindow.updateThreeJS();
-                        // };
-            
                         iframe.style.display = "block";
+                        iframe.initThreeJS('http://localhost:5173/src/assets/model/enviroment.splat');
+            
+                        
+                        
                     }, 3500); // 延迟 3000 毫秒（3 秒）
                 }
             });
