@@ -189,7 +189,7 @@
                 <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
                 <button id="buttonright" @click="expandRight">&gt;&gt;</button>
             </div>
-            <iframe src="./widgets/three/index.html" id="three" :style="{ width: rightWidth }"></iframe>
+            <div id="three" :style="{ width: rightWidth }"></div>
             <div id="cesiumMap" :style="{ width: rightWidth }"></div>
         </div>
 
@@ -234,6 +234,7 @@
     <!-- <script type="module" src="/src/main.ts"></script> -->
     <script src="main.vue"></script>
     <script type="module" src="./main.js"></script>
+    <script type="module" src="widgets\three\main.js"></script>
 </body>
 
 </html>

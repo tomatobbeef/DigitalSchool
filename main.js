@@ -1633,12 +1633,12 @@ let app = new Vue({
                     }) 
                     setTimeout(function() {
                         document.getElementById("cesiumMap").style.display = "none";
-                        const iframe = document.getElementById("three");
-                        iframe.style.display = "block";
-                        iframe.contentWindow.postMessage({
+                        const three = document.getElementById("three");
+                        three.style.display = "block";
+                        window.postMessage({
                             action: 'initThreeJS',
                         }, '*');
-                        
+                        console.log('post message')
                         
                     }, 3500); // 延迟 3000 毫秒（3 秒）
                 }
