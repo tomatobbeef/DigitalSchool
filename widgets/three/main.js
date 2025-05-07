@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // 初始化 Three.js 环境
 function initThreeJS(modelUrl) {
+    console.log('Initializing Three.js...');
     const rootElement = document.getElementById('threemap');
 
     // 动态获取容器的宽高
@@ -82,7 +83,11 @@ function loadGaussianModel(modelUrl, threeviewer) {
     return threeviewer.addSplatScene(modelUrl);
 }
 
-// 暴露 initThreeJS 方法到全局
-window.initThreeJS = initThreeJS;
 // 调用主函数并传入模型地址
 // initThreeJS('http://localhost:5173/src/assets/model/enviroment.splat');
+
+window.addEventListener('message', function (event) {
+    if (event.data.action === 'initThreeJS') {
+        initThreeJS('http://localhost:5173/src/assets/model/enviroment.splat');
+    }
+})

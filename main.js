@@ -1635,8 +1635,9 @@ let app = new Vue({
                         document.getElementById("cesiumMap").style.display = "none";
                         const iframe = document.getElementById("three");
                         iframe.style.display = "block";
-                        iframe.initThreeJS('http://localhost:5173/src/assets/model/enviroment.splat');
-            
+                        iframe.contentWindow.postMessage({
+                            action: 'initThreeJS',
+                        }, '*');
                         
                         
                     }, 3500); // 延迟 3000 毫秒（3 秒）
