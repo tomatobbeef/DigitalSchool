@@ -42,7 +42,7 @@ window.onload = function () {
             window.parent.postMessage({
                 action: 'indoor', // 指定要调用的父页面方法
                 payload: {
-                    position: selectedData.position,
+                    data: selectedData,
                 }
             }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
         }

@@ -1619,28 +1619,45 @@ let app = new Vue({
 
                 // 获取消息内容
                 const data = event.data;
-                const position = data.payload.position
+                const position = data.payload.data.position
                 // 根据消息内容调用 Vue 实例中的方法
                 if (data.action === 'indoor') {
-                    viewer.scene.camera.flyTo({
-                        destination: new Cesium.Cartesian3(position[0], position[1], position[2]), // 世界坐标点
-                        orientation: {
-                            heading: 4.6784159152452865,
-                            pitch: -0.2199005710200699,
-                            roll: 6.278964574356454
-                        },
-                        duration: 3 // 飞行持续时间
-                    }) 
-                    setTimeout(function() {
+                    if(data.payload.data.bInCampus == 0){
+                        viewer.scene.camera.flyTo({
+                            destination: new Cesium.Cartesian3(position[0], position[1], position[2]), // 世界坐标点
+                            orientation: {
+                                heading: 4.6784159152452865,
+                                pitch: -0.2199005710200699,
+                                roll: 6.278964574356454
+                            },
+                            duration: 3 // 飞行持续时间
+                        }) 
+                        setTimeout(function() {
+                            document.getElementById("cesiumMap").style.display = "none";
+                            const three = document.getElementById("three");
+                            three.style.display = "block";
+                            window.postMessage({
+                                action: 'initThreeJS',
+                                payload: {
+                                    data: data.payload.data,
+                                }
+                            }, '*');
+                            console.log('post message')
+                            
+                        }, 3500); // 延迟 3000 毫秒（3 秒）
+                    }else{
                         document.getElementById("cesiumMap").style.display = "none";
-                        const three = document.getElementById("three");
-                        three.style.display = "block";
-                        window.postMessage({
-                            action: 'initThreeJS',
-                        }, '*');
-                        console.log('post message')
-                        
-                    }, 3500); // 延迟 3000 毫秒（3 秒）
+                            const three = document.getElementById("three");
+                            three.style.display = "block";
+                            window.postMessage({
+                                action: 'initThreeJS',
+                                payload: {
+                                    data: data.payload.data,
+                                }
+                            }, '*');
+                            console.log('post message')
+                    }
+
                 }
             });
 
