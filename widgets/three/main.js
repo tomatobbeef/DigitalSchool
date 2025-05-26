@@ -2,6 +2,9 @@ import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
+
 
 // 声明一个对象keyStates用来记录键盘事件状态
 const keyStates = {
@@ -19,7 +22,7 @@ let Moving = false;
 let scene, camera, renderer, controls, gs_viewer, player;
 const delta = 0.046;
 const speed = 2.05; // 移动速度
-let mixer, walkingClip;
+let mixer, walkingClip,idleClip,walkAction,idleAction;
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
 let lastMouseX = 0; // 上一次鼠标水平位置
@@ -145,7 +148,7 @@ function initThreeJS(modelUrl,playerposition) {
             // requestAnimationFrame(update);
         });
 
-    loadFBXModel('src/assets/model/character.fbx',playerposition);
+    loadFBXModel('public/model/Idle.fbx',playerposition);
 }
 
 // 封装加载高斯模型的函数
@@ -156,7 +159,8 @@ function loadGaussianModel(modelUrl, gs_viewer) {
 //加载人物动画和模型
 function loadFBXModel(modelUrl,playerposition) {
     const loader = new FBXLoader();
-
+    // 创建 GLTFLoader 实例
+    // const loader = new THREE.GLTFLoader();
     loader.load(modelUrl, (object) => {
         player = object;
         scene.add(player);
@@ -165,47 +169,56 @@ function loadFBXModel(modelUrl,playerposition) {
         player.rotation.x = Math.PI; // 绕 X 轴翻转（上下颠倒修正）
         // 获取模型的动画
         const animations = object.animations;
-        if (animations.length > 0) {
-            walkingClip = animations[0]; // 假设只有一个 walking 动画
-            mixer = new THREE.AnimationMixer(object);
-            const walkingAction = mixer.clipAction(walkingClip);
-            walkingAction.play(); // 播放 walking 动画
-
-            // 更新动画
-            // 在FBX加载回调中的动画更新部分
-            function animate() {
-                renderer.clear();
-                gs_viewer.update();
-                gs_viewer.render();
-
-                if (player) {
-                    
-                    const direction = new THREE.Vector3();
-                    player.getWorldDirection(direction);
-
-                    if (keyStates.W) player.position.add(direction.multiplyScalar(speed * delta));
-                    if (keyStates.S) player.position.add(direction.multiplyScalar(-speed * delta));
-                    if (keyStates.A) {
-                        direction.crossVectors(player.up, direction).normalize();
-                        player.position.add(direction.multiplyScalar(-speed * delta));
-                    }
-                    if (keyStates.D) {
-                        direction.crossVectors(player.up, direction).normalize();
-                        player.position.add(direction.multiplyScalar(speed * delta));
-                    }
-
-                    updateCamera();
-                }
-
-                if (mixer && Moving) {  // 关键修改：只在移动时播放动画
-                    mixer.update(delta);
-                }
-
-                renderer.render(scene, camera);
-                requestAnimationFrame(animate);
-            }
+        loader.load('public/model/Walking.fbx', (walk) => {
+            mixer = new THREE.AnimationMixer(player);
+            walkingClip= walk.animations[0]; // 假设动画文件中只有一个动画剪辑
+            walkAction = mixer.clipAction(walkingClip);
+            idleClip= player.animations[0]; // 假设动画文件中只有一个动画剪辑
+            idleAction = mixer.clipAction(idleClip);
+            idleAction.play();
             animate();
+          });
+          function animate() {
+            renderer.clear();
+            gs_viewer.update();
+            gs_viewer.render();
+
+            if (player) {
+                
+                const direction = new THREE.Vector3();
+                player.getWorldDirection(direction);
+
+                if (keyStates.W) player.position.add(direction.multiplyScalar(speed * delta));
+                if (keyStates.S) player.position.add(direction.multiplyScalar(-speed * delta));
+                if (keyStates.A) {
+                    direction.crossVectors(player.up, direction).normalize();
+                    player.position.add(direction.multiplyScalar(-speed * delta));
+                }
+                if (keyStates.D) {
+                    direction.crossVectors(player.up, direction).normalize();
+                    player.position.add(direction.multiplyScalar(speed * delta));
+                }
+
+                updateCamera();
+            }
+
+            if (mixer) {  // 关键修改：只在移动时播放动画
+                mixer.update(delta);
+                console.log(Moving)
+                if(Moving){
+                    walkAction.play();
+                    idleAction.stop();
+                }
+                else{
+                    idleAction.play();
+                    walkAction.stop();
+                }
+            }
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
         }
+        
     });
 }
 
