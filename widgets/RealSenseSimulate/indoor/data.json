@@ -47,6 +47,22 @@
                 "y":2.3,
                 "z":-4
             }
+        },
+        {
+            "id": 3,
+            "name": "恐龙化石",
+            "position": [
+                -2291720.99,
+                5002785.13,
+                3214277.24
+            ],
+            "bInCampus": 1,
+            "gsmodel": "src/assets/model/dragon.splat",
+            "playerposition":{
+                "x":-3,
+                "y":2.3,
+                "z":0
+            }
         }
     ]
 }

@@ -80,7 +80,7 @@ window.addEventListener('mouseup', (event) => {
 
 
 // 初始化 Three.js 环境
-function initThreeJS(modelUrl,playerposition) {
+function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
     console.log('Initializing Three.js...');
     const rootElement = document.getElementById('three');
 
@@ -145,7 +145,14 @@ function initThreeJS(modelUrl,playerposition) {
     // 加载高斯模型
     loadGaussianModel(modelUrl, gs_viewer)
         .then(() => {
-            // requestAnimationFrame(update);
+            // 修改高斯模型的位置
+            gs_viewer.splatMesh.position.set(0, 0, 0); // 将模型移动到 (10, 0, 0)
+
+            // 修改高斯模型的旋转
+            gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(18), 0, 0); // 绕 Y 轴旋转 45 度
+p
+            // 更新矩阵，确保位置和旋转生效
+            gs_viewer.splatScene.updateMatrixWorld();
         });
 
     loadFBXModel('public/model/Idle.fbx',playerposition);
