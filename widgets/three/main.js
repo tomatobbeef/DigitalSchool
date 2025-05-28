@@ -146,10 +146,10 @@ function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
     loadGaussianModel(modelUrl, gs_viewer)
         .then(() => {
             // 修改高斯模型的位置
-            gs_viewer.splatMesh.position.set(0, 0, 0); // 将模型移动到 (10, 0, 0)
+            gs_viewer.splatMesh.position.set(scenePos.x, scenePos.x, scenePos.x); // 将模型移动到 (10, 0, 0)
 
             // 修改高斯模型的旋转
-            gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(18), 0, 0); // 绕 Y 轴旋转 45 度
+            gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
 p
             // 更新矩阵，确保位置和旋转生效
             gs_viewer.splatScene.updateMatrixWorld();
@@ -261,6 +261,6 @@ function updateCamera() {
 window.addEventListener('message', function (event) {
     if (event.data.action === 'initThreeJS') {
         const data = event.data.payload.data;
-        initThreeJS(data.gsmodel,data.playerposition);
+        initThreeJS(data.gsmodel,data.playerposition,data.scenePos,data.sceneRot);
     }
 })
