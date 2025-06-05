@@ -20,8 +20,8 @@ const keyStates = {
 let isRendering = false;
 let Moving = false;
 let scene, camera, renderer, controls, gs_viewer, player;
-const delta = 0.046;
-const speed = 2.05; // 移动速度
+const delta = 0.026;
+const speed = 1.85; // 移动速度
 let mixer, walkingClip,idleClip,walkAction,idleAction;
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
@@ -63,7 +63,7 @@ window.addEventListener('mousemove', (event) => {
         const rotationDelta = deltaX * rotationSpeed; // 计算旋转角度
 
         // 更新角色的旋转
-        player.rotation.y -= rotationDelta;
+        player.rotation.y -= rotationDelta;ß
 
 
         // 更新 lastMouseX 为当前鼠标水平位置
