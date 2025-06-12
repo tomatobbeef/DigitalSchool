@@ -48,3 +48,16 @@ window.onload = function () {
         }
     });
 };
+
+function autowander(){
+    // 向父页面发送消息
+    window.parent.postMessage({
+        action: 'autowander', // 指定要调用的父页面方法
+        payload: {
+            data: "start",
+        }
+    }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
+}
+
+// const iframeSrc = 'widgets/Statistics/cateen/result.html?' + String(build);
+//         window.parent.appk.toggleIframe(iframeSrc);

@@ -1659,6 +1659,8 @@ let app = new Vue({
                     }
 
                 }
+                else if (data.action === 'autowander') {
+                }
             });
 
         },

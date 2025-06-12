@@ -22,7 +22,8 @@ let Moving = false;
 let scene, camera, renderer, controls, gs_viewer, player;
 const delta = 0.026;
 const speed = 1.85; // 移动速度
-let mixer, walkingClip,idleClip,walkAction,idleAction;
+let mixer, walkingClip, idleClip, walkAction, idleAction;
+let currentCameraMode = 'thirdPerson'; // 默认为第三人称模式
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
 let lastMouseX = 0; // 上一次鼠标水平位置
@@ -58,12 +59,12 @@ window.addEventListener('mousedown', (event) => {
 
 // 监听鼠标移动事件
 window.addEventListener('mousemove', (event) => {
-    if (isDragging&&player) {
+    if (isDragging && player) {
         const deltaX = event.clientX - lastMouseX; // 计算鼠标水平偏移量
         const rotationDelta = deltaX * rotationSpeed; // 计算旋转角度
 
         // 更新角色的旋转
-        player.rotation.y -= rotationDelta;ß
+        player.rotation.y -= rotationDelta; ß
 
 
         // 更新 lastMouseX 为当前鼠标水平位置
@@ -80,7 +81,7 @@ window.addEventListener('mouseup', (event) => {
 
 
 // 初始化 Three.js 环境
-function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
+function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
     console.log('Initializing Three.js...');
     const rootElement = document.getElementById('three');
 
@@ -150,12 +151,12 @@ function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
 
             // 修改高斯模型的旋转
             gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
-p
+            p
             // 更新矩阵，确保位置和旋转生效
             gs_viewer.splatScene.updateMatrixWorld();
         });
 
-    loadFBXModel('public/model/Idle.fbx',playerposition);
+    loadFBXModel('public/model/Idle.fbx', playerposition);
 }
 
 // 封装加载高斯模型的函数
@@ -164,7 +165,7 @@ function loadGaussianModel(modelUrl, gs_viewer) {
 }
 
 //加载人物动画和模型
-function loadFBXModel(modelUrl,playerposition) {
+function loadFBXModel(modelUrl, playerposition) {
     const loader = new FBXLoader();
     // 创建 GLTFLoader 实例
     // const loader = new THREE.GLTFLoader();
@@ -178,20 +179,20 @@ function loadFBXModel(modelUrl,playerposition) {
         const animations = object.animations;
         loader.load('public/model/Walking.fbx', (walk) => {
             mixer = new THREE.AnimationMixer(player);
-            walkingClip= walk.animations[0]; // 假设动画文件中只有一个动画剪辑
+            walkingClip = walk.animations[0]; // 假设动画文件中只有一个动画剪辑
             walkAction = mixer.clipAction(walkingClip);
-            idleClip= player.animations[0]; // 假设动画文件中只有一个动画剪辑
+            idleClip = player.animations[0]; // 假设动画文件中只有一个动画剪辑
             idleAction = mixer.clipAction(idleClip);
             idleAction.play();
             animate();
-          });
-          function animate() {
+        });
+        function animate() {
             renderer.clear();
             gs_viewer.update();
             gs_viewer.render();
 
             if (player) {
-                
+                // 玩家移动逻辑
                 const direction = new THREE.Vector3();
                 player.getWorldDirection(direction);
 
@@ -206,17 +207,15 @@ function loadFBXModel(modelUrl,playerposition) {
                     player.position.add(direction.multiplyScalar(speed * delta));
                 }
 
-                updateCamera();
+                updateCamera(); // 更新相机位置和朝向
             }
 
-            if (mixer) {  // 关键修改：只在移动时播放动画
+            if (mixer) {
                 mixer.update(delta);
-                console.log(Moving)
-                if(Moving){
+                if (Moving) {
                     walkAction.play();
                     idleAction.stop();
-                }
-                else{
+                } else {
                     idleAction.play();
                     walkAction.stop();
                 }
@@ -225,7 +224,7 @@ function loadFBXModel(modelUrl,playerposition) {
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-        
+
     });
 }
 
@@ -235,24 +234,39 @@ const cameraLookAtOffset = new THREE.Vector3(-0.5, -2.0, 0); // 看向角色身�
 
 function updateCamera() {
     if (player) {
-        // 1. 获取角色世界位置
         const playerWorldPos = new THREE.Vector3();
         player.getWorldPosition(playerWorldPos);
 
-        // 2. 计算相机位置（角色位置 + 偏移）
-        const cameraPos = playerWorldPos.clone()
-            .add(cameraOffset.clone().applyQuaternion(player.quaternion));
+        if (currentCameraMode === 'thirdPerson') {
+            // 第三人称相机逻辑
+            const cameraPos = playerWorldPos.clone()
+                .add(cameraOffset.clone().applyQuaternion(player.quaternion));
+            const lookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
+            camera.position.copy(cameraPos);
+            camera.lookAt(lookAtPos);
+        } else if (currentCameraMode === 'orbit') {
+            // 围绕中心点旋转的相机逻辑
+            const radius = 5; // 相机距离中心点的距离
+            const angle = orbitRotationSpeed * Date.now(); // 根据时间计算角度
+            const orbitX = radius * Math.sin(angle);
+            const orbitZ = radius * Math.cos(angle);
 
-        // 3. 计算看向的点（角色位置 + 轻微高度偏移）
-        const lookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
-
-        // 4. 更新相机
-        camera.position.copy(cameraPos);
-        camera.lookAt(lookAtPos);
+            // 相机位置围绕中心点旋转
+            camera.position.set(orbitX, 2, orbitZ); // 假设中心点在 (0, 0, 0)
+            camera.lookAt(scene.position); // 相机始终看向中心点
+        }
     }
 }
 
-
+function switchCameraMode() {
+    if (currentCameraMode === 'thirdPerson') {
+        currentCameraMode = 'orbit';
+        console.log('Switched to Orbit Camera Mode');
+    } else {
+        currentCameraMode = 'thirdPerson';
+        console.log('Switched to Third Person Camera Mode');
+    }
+}
 
 
 // 调用主函数并传入模型地址
@@ -261,6 +275,7 @@ function updateCamera() {
 window.addEventListener('message', function (event) {
     if (event.data.action === 'initThreeJS') {
         const data = event.data.payload.data;
-        initThreeJS(data.gsmodel,data.playerposition,data.scenePos,data.sceneRot);
+        initThreeJS(data.gsmodel, data.playerposition, data.scenePos, data.sceneRot);
     }
 })
+

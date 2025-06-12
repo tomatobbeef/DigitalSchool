@@ -65,6 +65,7 @@
       margin: 0 26px 10px 0;
       text-align: center;
       padding-top: 12px;
+      color: #16608f;
     }
 
     .tool-thum {
@@ -149,13 +150,23 @@
   </style>
 </head>
 
-<body style="padding: 5px; text-align: center" title="提示：选择要进入的场馆即可进入室内">
-  <select name="pets" id="sel" style="width: 70%; position: absolute; left: 0%">
+<body style="padding: 5px; text-align: center">
+  <!-- <select name="pets" id="sel" style="width: 70%; position: absolute; left: 0%">
     <option value="">--请选择--</option>
   </select>
   <button id="sr" style="width: 20%; position: absolute; right: 5%; top: 20px">
     进入
-  </button>
+  </button> -->
+  <div class="btn-group">
+    <div id="btn_measure_length" class="tool-btn" onclick="autowander()">
+        <div class="tool-thum"><img src="../image/measure-length.svg" alt="下雪"></div>
+        <span class="btn_none"> 自动漫游 </span>
+    </div>
+    <div id="btn_measure_length" class="tool-btn" onclick="addSnow()">
+        <div class="tool-thum"><img src="../image/measure-length.svg" alt="下雪"></div>
+        <span class="btn_none"> 自主漫游 </span>
+    </div>
+  </div>
   <script type="module"></script>
 </body>
 

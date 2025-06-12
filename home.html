@@ -157,8 +157,6 @@
                 <div>实时模型分析</div>
             </div>
 
-
-
             <div @click="openPopup('widgets/DigitalUniversity/view.html')"
                 :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
                 <div><img src="./images/jingdian.png" alt=""></div>
@@ -186,7 +184,7 @@
         <div id="container">
             <div id="openlayersMap" :style="{ width: leftWidth }"></div>
             <div id="buttonContainer">
-                <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
+                <button id="buttonleft" @click="expandLeft">&lt;&lt;</button> 
                 <button id="buttonright" @click="expandRight">&gt;&gt;</button>
             </div>
             <div id="three" :style="{ width: rightWidth }"></div>
