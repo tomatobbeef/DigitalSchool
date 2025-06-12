@@ -23,11 +23,13 @@ let scene, camera, renderer, controls, gs_viewer, player;
 const delta = 0.026;
 const speed = 1.85; // 移动速度
 let mixer, walkingClip, idleClip, walkAction, idleAction;
-let currentCameraMode = 'thirdPerson'; // 默认为第三人称模式
+let currentCameraMode = 'orbit'; // 默认为第三人称模式
+let orbitControls; // 用于第一人称浏览的 OrbitControls
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
 let lastMouseX = 0; // 上一次鼠标水平位置
 const rotationSpeed = 0.002; // 鼠标旋转速度（可以根据需要调整）
+const orbitRotationSpeed = 0.0002;
 
 // 键盘事件监听（更新后）
 document.addEventListener('keydown', (event) => {
@@ -85,34 +87,25 @@ function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
     console.log('Initializing Three.js...');
     const rootElement = document.getElementById('three');
 
-    // 动态获取容器的宽高
     const { width: renderWidth, height: renderHeight } = rootElement.getBoundingClientRect();
 
-    // 创建渲染器时添加alpha配置
     renderer = new THREE.WebGLRenderer({
         antialias: false,
-        // alpha: true // 启用透明通道
     });
     renderer.setSize(renderWidth, renderHeight);
-    // 设置混合模式
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.autoClear = false; // 关闭自动清除
+    renderer.autoClear = false;
 
-    // 将渲染器的 canvas 添加到已有的 div 中
     rootElement.appendChild(renderer.domElement);
 
-    scene = new THREE.Scene(); // 创建一个 Three.js 场景
-
+    scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(65, renderWidth / renderHeight, 0.1, 500);
-    // camera.position.set(0, 0, 5); // 调整相机位置
-    camera.up.set(0, -1, 0); // 设置相机的“上”方向为 Y 轴
-    // camera.lookAt(scene.position); // 相机指向场景中心
+    camera.up.set(0, -1, 0);
 
-    // 添加光源
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // 环境光
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // 平行光
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
@@ -122,41 +115,33 @@ function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
         camera: camera,
         useBuiltInControls: false,
         ignoreDevicePixelRatio: false,
-        gpuAcceleratedSort: false, // 关闭 GPU 加速排序
-        sharedMemoryForWorkers: false, // 关闭共享内存
+        gpuAcceleratedSort: false,
+        sharedMemoryForWorkers: false,
         integerBasedSort: true,
         halfPrecisionCovariancesOnGPU: true,
         dynamicScene: false,
         webXRMode: GaussianSplats3D.WebXRMode.None,
-        renderMode: GaussianSplats3D.RenderMode.OnChange,
-        sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant,
-        antialiased: false,
-        focalAdjustment: 1.0,
-        logLevel: GaussianSplats3D.LogLevel.None,
-        sphericalHarmonicsDegree: 0,
-        enableOptionalEffects: false,
-        inMemoryCompressionLevel: 2,
-        freeIntermediateSplatData: false,
-        // ...其他配置不变...
-        renderMode: GaussianSplats3D.RenderMode.Always, // 强制持续渲染
+        renderMode: GaussianSplats3D.RenderMode.Always,
         antialiased: true,
-        alpha: true // 启用透明
+        alpha: true
     });
 
-    // 加载高斯模型
-    loadGaussianModel(modelUrl, gs_viewer)
-        .then(() => {
-            // 修改高斯模型的位置
-            gs_viewer.splatMesh.position.set(scenePos.x, scenePos.x, scenePos.x); // 将模型移动到 (10, 0, 0)
-
-            // 修改高斯模型的旋转
-            gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
-            p
-            // 更新矩阵，确保位置和旋转生效
-            gs_viewer.splatScene.updateMatrixWorld();
-        });
+    loadGaussianModel(modelUrl, gs_viewer).then(() => {
+        gs_viewer.splatMesh.position.set(scenePos.x, scenePos.y, scenePos.z);
+        gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z));
+        gs_viewer.splatScene.updateMatrixWorld();
+    });
 
     loadFBXModel('public/model/Idle.fbx', playerposition);
+
+    // 初始化 OrbitControls
+    orbitControls = new OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true; // 启用阻尼效果
+    orbitControls.dampingFactor = 0.25; // 阻尼系数
+    orbitControls.screenSpacePanning = false; // 禁用屏幕空间平移
+    orbitControls.minDistance = 1; // 最小距离
+    orbitControls.maxDistance = 100; // 最大距离
+    orbitControls.maxPolarAngle = Math.PI / 2; // 最大极角
 }
 
 // 封装加载高斯模型的函数
@@ -246,18 +231,24 @@ function updateCamera() {
             camera.lookAt(lookAtPos);
         } else if (currentCameraMode === 'orbit') {
             // 围绕中心点旋转的相机逻辑
-            const radius = 5; // 相机距离中心点的距离
+            const radius = 2; // 相机距离中心点的距离
             const angle = orbitRotationSpeed * Date.now(); // 根据时间计算角度
             const orbitX = radius * Math.sin(angle);
             const orbitZ = radius * Math.cos(angle);
 
-            // 相机位置围绕中心点旋转
-            camera.position.set(orbitX, 2, orbitZ); // 假设中心点在 (0, 0, 0)
-            camera.lookAt(scene.position); // 相机始终看向中心点
+            // 相机位置围绕中心点旋转，并向上移动
+            const orbitY = -2; // 相机的垂直位置
+            camera.position.set(orbitX, orbitY, orbitZ); // 相机位置
+
+            // 相机俯视中心点，看向中心点下方一点的位置
+            const lookAtPos = new THREE.Vector3(0, -1, 0); // 看向中心点下方一点
+            camera.lookAt(lookAtPos);
+        }   else if (currentCameraMode === 'firstPerson') {
+            // 第一人称自主浏览模式
+            orbitControls.update(); // 更新 OrbitControls
         }
     }
 }
-
 function switchCameraMode() {
     if (currentCameraMode === 'thirdPerson') {
         currentCameraMode = 'orbit';
