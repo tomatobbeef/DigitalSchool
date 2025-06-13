@@ -23,7 +23,7 @@ let scene, camera, renderer, controls, gs_viewer, player;
 const delta = 0.026;
 const speed = 1.85; // 移动速度
 let mixer, walkingClip, idleClip, walkAction, idleAction;
-let currentCameraMode = 'orbit'; // 默认为第三人称模式
+let currentCameraMode = 'firstPerson'; // 默认为第三人称模式
 let orbitControls; // 用于第一人称浏览的 OrbitControls
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
@@ -142,6 +142,7 @@ function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
     orbitControls.minDistance = 1; // 最小距离
     orbitControls.maxDistance = 100; // 最大距离
     orbitControls.maxPolarAngle = Math.PI / 2; // 最大极角
+    switchCameraMode() 
 }
 
 // 封装加载高斯模型的函数
@@ -243,19 +244,35 @@ function updateCamera() {
             // 相机俯视中心点，看向中心点下方一点的位置
             const lookAtPos = new THREE.Vector3(0, -1, 0); // 看向中心点下方一点
             camera.lookAt(lookAtPos);
-        }   else if (currentCameraMode === 'firstPerson') {
+        } else if (currentCameraMode === 'firstPerson') {
             // 第一人称自主浏览模式
+            camera.position.copy(playerWorldPos); // 将相机位置设置为人物模型的位置
+            camera.rotation.copy(player.rotation); // 将相机的旋转设置为人物模型的旋转
             orbitControls.update(); // 更新 OrbitControls
         }
     }
 }
-function switchCameraMode() {
+
+function switchCameraMode(module) {
+    currentCameraMode = module || 'thirdPerson'; // 如果传入了模块，则使用传入的模块，否则默认为第三人称模式
     if (currentCameraMode === 'thirdPerson') {
         currentCameraMode = 'orbit';
         console.log('Switched to Orbit Camera Mode');
-    } else {
+        if (player) {
+            player.visible = false; // 在 Orbit 模式下隐藏人物模型
+        }
+    } else if (currentCameraMode === 'orbit') {
+        currentCameraMode = 'firstPerson';
+        console.log('Switched to First Person Camera Mode');
+        if (player) {
+            player.visible = false; // 在第一人称模式下隐藏人物模型
+        }
+    } else if (currentCameraMode === 'firstPerson') {
         currentCameraMode = 'thirdPerson';
         console.log('Switched to Third Person Camera Mode');
+        if (player) {
+            player.visible = true; // 在第三人称模式下显示人物模型
+        }
     }
 }
 
@@ -267,6 +284,10 @@ window.addEventListener('message', function (event) {
     if (event.data.action === 'initThreeJS') {
         const data = event.data.payload.data;
         initThreeJS(data.gsmodel, data.playerposition, data.scenePos, data.sceneRot);
+    }else if (event.data.action === 'autowander') {
+        switchCameraMode('orbit'); // 切换到 Orbit 模式
+    } else if (event.data.action === 'thirdpersonwander') {
+        switchCameraMode('thirdPerson'); // 切换到 Third Person 模式
     }
 })
 

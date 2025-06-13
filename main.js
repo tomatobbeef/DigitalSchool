@@ -1622,7 +1622,7 @@ let app = new Vue({
                 const position = data.payload.data.position
                 // 根据消息内容调用 Vue 实例中的方法
                 if (data.action === 'indoor') {
-                    if(data.payload.data.bInCampus == 0){
+                    if (data.payload.data.bInCampus == 0) {
                         viewer.scene.camera.flyTo({
                             destination: new Cesium.Cartesian3(position[0], position[1], position[2]), // 世界坐标点
                             orientation: {
@@ -1631,8 +1631,8 @@ let app = new Vue({
                                 roll: 6.278964574356454
                             },
                             duration: 3 // 飞行持续时间
-                        }) 
-                        setTimeout(function() {
+                        })
+                        setTimeout(function () {
                             document.getElementById("cesiumMap").style.display = "none";
                             const three = document.getElementById("three");
                             three.style.display = "block";
@@ -1643,23 +1643,31 @@ let app = new Vue({
                                 }
                             }, '*');
                             console.log('post message')
-                            
+
                         }, 3500); // 延迟 3000 毫秒（3 秒）
-                    }else{
+                    } else {
                         document.getElementById("cesiumMap").style.display = "none";
-                            const three = document.getElementById("three");
-                            three.style.display = "block";
-                            window.postMessage({
-                                action: 'initThreeJS',
-                                payload: {
-                                    data: data.payload.data,
-                                }
-                            }, '*');
-                            console.log('post message')
+                        const three = document.getElementById("three");
+                        three.style.display = "block";
+                        window.postMessage({
+                            action: 'initThreeJS',
+                            payload: {
+                                data: data.payload.data,
+                            }
+                        }, '*');
+                        console.log('post message')
                     }
 
                 }
                 else if (data.action === 'autowander') {
+                    window.postMessage({
+                        action: 'autowander',
+                    }, '*');
+                }
+                else if (data.action === 'thirdpersonwander') {
+                    window.postMessage({
+                        action: 'thirdpersonwander',
+                    }, '*');
                 }
             });
 
