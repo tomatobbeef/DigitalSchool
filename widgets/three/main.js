@@ -2,7 +2,6 @@ import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 
 
@@ -23,8 +22,13 @@ let scene, camera, renderer, controls, gs_viewer, player;
 const delta = 0.026;
 const speed = 1.85; // 移动速度
 let mixer, walkingClip, idleClip, walkAction, idleAction;
-let currentCameraMode = 'firstPerson'; // 默认为第三人称模式
+
+const orbit = 'orbit';
+const thirdPerson = 'thridPerson';
+const firstPerson = 'firstPerson';
+let currentCameraMode = firstPerson; // 默认为第三人称模式
 let orbitControls; // 用于第一人称浏览的 OrbitControls
+let playerPOs;
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
 let lastMouseX = 0; // 上一次鼠标水平位置
@@ -109,6 +113,8 @@ function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
+    
+
     gs_viewer = new GaussianSplats3D.Viewer({
         selfDrivenMode: false,
         renderer: renderer,
@@ -126,23 +132,23 @@ function initThreeJS(modelUrl, playerposition, scenePos, sceneRot) {
         alpha: true
     });
 
+    playerPOs = playerposition;
     loadGaussianModel(modelUrl, gs_viewer).then(() => {
         gs_viewer.splatMesh.position.set(scenePos.x, scenePos.y, scenePos.z);
         gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z));
-        gs_viewer.splatScene.updateMatrixWorld();
+        // gs_viewer.splatScene.updateMatrixWorld();
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        orbitControls.enableDamping = true;
+        orbitControls.dampingFactor = 0.25;
+        orbitControls.screenSpacePanning = false;
+        orbitControls.minDistance = 1;
+        orbitControls.maxDistance = 100;
+        orbitControls.maxPolarAngle = Math.PI / 2;
+        orbitControls.enabled = false; // 默认禁用
+        switchCameraMode(firstPerson)
+        animate();  
     });
-
-    loadFBXModel('public/model/Idle.fbx', playerposition);
-
-    // 初始化 OrbitControls
-    orbitControls = new OrbitControls(camera, renderer.domElement);
-    orbitControls.enableDamping = true; // 启用阻尼效果
-    orbitControls.dampingFactor = 0.25; // 阻尼系数
-    orbitControls.screenSpacePanning = false; // 禁用屏幕空间平移
-    orbitControls.minDistance = 1; // 最小距离
-    orbitControls.maxDistance = 100; // 最大距离
-    orbitControls.maxPolarAngle = Math.PI / 2; // 最大极角
-    switchCameraMode() 
+    
 }
 
 // 封装加载高斯模型的函数
@@ -170,48 +176,45 @@ function loadFBXModel(modelUrl, playerposition) {
             idleClip = player.animations[0]; // 假设动画文件中只有一个动画剪辑
             idleAction = mixer.clipAction(idleClip);
             idleAction.play();
-            animate();
         });
-        function animate() {
-            renderer.clear();
-            gs_viewer.update();
-            gs_viewer.render();
-
-            if (player) {
-                // 玩家移动逻辑
-                const direction = new THREE.Vector3();
-                player.getWorldDirection(direction);
-
-                if (keyStates.W) player.position.add(direction.multiplyScalar(speed * delta));
-                if (keyStates.S) player.position.add(direction.multiplyScalar(-speed * delta));
-                if (keyStates.A) {
-                    direction.crossVectors(player.up, direction).normalize();
-                    player.position.add(direction.multiplyScalar(-speed * delta));
-                }
-                if (keyStates.D) {
-                    direction.crossVectors(player.up, direction).normalize();
-                    player.position.add(direction.multiplyScalar(speed * delta));
-                }
-
-                updateCamera(); // 更新相机位置和朝向
-            }
-
-            if (mixer) {
-                mixer.update(delta);
-                if (Moving) {
-                    walkAction.play();
-                    idleAction.stop();
-                } else {
-                    idleAction.play();
-                    walkAction.stop();
-                }
-            }
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-
     });
+}
+
+function animate() {
+    renderer.clear();
+    gs_viewer.update();
+    gs_viewer.render();
+
+    if (player) {
+        // 玩家移动逻辑
+        const direction = new THREE.Vector3();
+        player.getWorldDirection(direction);
+
+        if (keyStates.W) player.position.add(direction.multiplyScalar(speed * delta));
+        if (keyStates.S) player.position.add(direction.multiplyScalar(-speed * delta));
+        if (keyStates.A) {
+            direction.crossVectors(player.up, direction).normalize();
+            player.position.add(direction.multiplyScalar(-speed * delta));
+        }
+        if (keyStates.D) {
+            direction.crossVectors(player.up, direction).normalize();
+            player.position.add(direction.multiplyScalar(speed * delta));
+        }
+    }
+
+    if (mixer) {
+        mixer.update(delta);
+        if (Moving) {
+            walkAction.play();
+            idleAction.stop();
+        } else {
+            idleAction.play();
+            walkAction.stop();
+        }
+    }
+    renderer.render(scene, camera);
+    updateCamera(); // 更新相机位置和朝向
+    requestAnimationFrame(animate);
 }
 
 // 第三人称相机参数
@@ -219,18 +222,8 @@ const cameraOffset = new THREE.Vector3(-0.5, 2.2, -1.8); // (x: 水平偏移, y:
 const cameraLookAtOffset = new THREE.Vector3(-0.5, -2.0, 0); // 看向角色身体中心偏上位置
 
 function updateCamera() {
-    if (player) {
-        const playerWorldPos = new THREE.Vector3();
-        player.getWorldPosition(playerWorldPos);
-
-        if (currentCameraMode === 'thirdPerson') {
-            // 第三人称相机逻辑
-            const cameraPos = playerWorldPos.clone()
-                .add(cameraOffset.clone().applyQuaternion(player.quaternion));
-            const lookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
-            camera.position.copy(cameraPos);
-            camera.lookAt(lookAtPos);
-        } else if (currentCameraMode === 'orbit') {
+    switch (currentCameraMode) {
+        case orbit:
             // 围绕中心点旋转的相机逻辑
             const radius = 2; // 相机距离中心点的距离
             const angle = orbitRotationSpeed * Date.now(); // 根据时间计算角度
@@ -244,35 +237,45 @@ function updateCamera() {
             // 相机俯视中心点，看向中心点下方一点的位置
             const lookAtPos = new THREE.Vector3(0, -1, 0); // 看向中心点下方一点
             camera.lookAt(lookAtPos);
-        } else if (currentCameraMode === 'firstPerson') {
+            break;
+        case thirdPerson:
+            if(player){
+                 // 第三人称相机逻辑
+            const cameraPos = playerWorldPos.clone()
+            .add(cameraOffset.clone().applyQuaternion(player.quaternion));
+            const lookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
+            camera.position.copy(cameraPos);
+            camera.lookAt(lookAtPos);
+            }
+            break;
+        case firstPerson:
+           // 初始化 OrbitControls
             // 第一人称自主浏览模式
-            camera.position.copy(playerWorldPos); // 将相机位置设置为人物模型的位置
-            camera.rotation.copy(player.rotation); // 将相机的旋转设置为人物模型的旋转
+            console.log('111')
             orbitControls.update(); // 更新 OrbitControls
-        }
+            break;
+        default:
+            console.log('无效的天数');
     }
 }
-
-function switchCameraMode(module) {
-    currentCameraMode = module || 'thirdPerson'; // 如果传入了模块，则使用传入的模块，否则默认为第三人称模式
-    if (currentCameraMode === 'thirdPerson') {
-        currentCameraMode = 'orbit';
-        console.log('Switched to Orbit Camera Mode');
-        if (player) {
-            player.visible = false; // 在 Orbit 模式下隐藏人物模型
-        }
-    } else if (currentCameraMode === 'orbit') {
-        currentCameraMode = 'firstPerson';
-        console.log('Switched to First Person Camera Mode');
-        if (player) {
-            player.visible = false; // 在第一人称模式下隐藏人物模型
-        }
-    } else if (currentCameraMode === 'firstPerson') {
-        currentCameraMode = 'thirdPerson';
-        console.log('Switched to Third Person Camera Mode');
-        if (player) {
-            player.visible = true; // 在第三人称模式下显示人物模型
-        }
+function switchCameraMode(CameraMode) {
+    currentCameraMode = CameraMode
+    switch (currentCameraMode) {
+        case orbit:
+            orbitControls.enabled = false;
+            console.log('工作日');
+            break;
+        case thirdPerson:
+            orbitControls.enabled = false;
+            loadFBXModel('public/model/Idle.fbx', playerPOs);
+            break;
+        case firstPerson:
+            camera.position.set(0, 0, 0);
+           // 初始化 OrbitControls
+           orbitControls.enabled = true;
+            break;
+        default:
+            console.log('无效的天数');
     }
 }
 
@@ -284,10 +287,6 @@ window.addEventListener('message', function (event) {
     if (event.data.action === 'initThreeJS') {
         const data = event.data.payload.data;
         initThreeJS(data.gsmodel, data.playerposition, data.scenePos, data.sceneRot);
-    }else if (event.data.action === 'autowander') {
-        switchCameraMode('orbit'); // 切换到 Orbit 模式
-    } else if (event.data.action === 'thirdpersonwander') {
-        switchCameraMode('thirdPerson'); // 切换到 Third Person 模式
     }
 })
 
