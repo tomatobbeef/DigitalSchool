@@ -233,22 +233,35 @@ function loadFBXModel(modelUrl,playerposition) {
 const cameraOffset = new THREE.Vector3(-0.5, 2.2, -1.8); // (x: 水平偏移, y: 高度, z: 后方距离)
 const cameraLookAtOffset = new THREE.Vector3(-0.5, -2.0, 0); // 看向角色身体中心偏上位置
 
+const cameraSmoothFactor = 0.1; // 平滑因子
+
 function updateCamera() {
     if (player) {
         // 1. 获取角色世界位置
         const playerWorldPos = new THREE.Vector3();
         player.getWorldPosition(playerWorldPos);
 
-        // 2. 计算相机位置（角色位置 + 偏移）
-        const cameraPos = playerWorldPos.clone()
+        // 2. 计算相机目标位置（角色位置 + 偏移）
+        const targetCameraPos = playerWorldPos.clone()
             .add(cameraOffset.clone().applyQuaternion(player.quaternion));
 
-        // 3. 计算看向的点（角色位置 + 轻微高度偏移）
-        const lookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
+        // 3. 计算相机目标看向点（角色位置 + 轻微高度偏移）
+        const targetLookAtPos = playerWorldPos.clone().add(cameraLookAtOffset);
 
-        // 4. 更新相机
-        camera.position.copy(cameraPos);
-        camera.lookAt(lookAtPos);
+        // 4. 使用线性插值平滑相机位置
+        camera.position.lerp(targetCameraPos, cameraSmoothFactor);
+
+        // 5. 使用线性插值平滑相机看向点
+        const currentLookAtPos = new THREE.Vector3();
+        camera.getWorldPosition(currentLookAtPos);
+        // currentLookAtPos.add(cameraLookAtOffset);
+        currentLookAtPos.lerp(targetLookAtPos, cameraSmoothFactor);
+
+        // 6. 更新相机看向点
+        camera.lookAt(currentLookAtPos);
+
+        // 7. 确保相机的“上”方向正确
+        camera.updateMatrixWorld(); // 更新相机的世界矩阵
     }
 }
 
