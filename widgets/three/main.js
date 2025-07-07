@@ -149,11 +149,16 @@ function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
             gs_viewer.splatMesh.position.set(scenePos.x, scenePos.x, scenePos.x); // 将模型移动到 (10, 0, 0)
 
             // 修改高斯模型的旋转
-            gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
-p
-            // 更新矩阵，确保位置和旋转生效
-            gs_viewer.splatScene.updateMatrixWorld();
-        });
+            // gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromEuler(new THREE.Euler(
+                THREE.MathUtils.degToRad(sceneRot.x), 
+                THREE.MathUtils.degToRad(sceneRot.y), 
+                THREE.MathUtils.degToRad(sceneRot.z)
+            ));
+            gs_viewer.splatMesh.quaternion.copy(quaternion);
+            gs_viewer.splatScene.updateMatrixWorld(); // 更新矩阵，确保位置和旋转生效
+                    });
 
     loadFBXModel('public/model/Idle.fbx',playerposition);
 }
