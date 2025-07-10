@@ -74,6 +74,38 @@
         .hasOffset {
             display: none;
         }
+        #info {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #info img {
+            width: 100%;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 10px;
+        }
+
+        #info h3 {
+            margin: 10px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        #info p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
     </style>
 
 </head>
@@ -227,6 +259,13 @@
             <div id="people">8896人</div>
             <div style="color:#00FFE4;">游客总人数</div>
         </div>
+    </div>
+
+    <!-- 标记点 -->
+    <div id="info">
+        <img src="marker.png" alt="Marker" style="width: 100%; border-radius: 10px 10px 0 0;">
+        <h3 id="info-title"></h3>
+        <p id="info-description"></p>
     </div>
 
     <!-- <script type="module" src="/src/main.ts"></script> -->

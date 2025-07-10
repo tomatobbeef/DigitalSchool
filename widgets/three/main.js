@@ -270,7 +270,75 @@ function updateCamera() {
     }
 }
 
+function addTagtoScene()
+{
+    let markers = [];
 
+    fetch('markers.json') // 假设 JSON 文件名为 markers.json
+        .then(response => response.json())
+        .then(data => {
+            markers = data;
+            createMarkers(markers); // 创建标记点
+        })
+        .catch(error => console.error('Error loading markers:', error));
+}
+// 获取信息显示元素
+const infoElement = document.getElementById('info');
+const infoTitle = document.getElementById('info-title');
+const infoDescription = document.getElementById('info-description');
+const infoImage = document.querySelector('#info img');
+function createMarkers(markersData) {
+    markersData.forEach(markerData => {
+        // 创建几何体
+        const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+
+        // 解析颜色
+        const color = new THREE.Color(markerData.color);
+
+        // 创建材质
+        const material = new THREE.MeshBasicMaterial({ color: color });
+
+        // 创建标记对象
+        const marker = new THREE.Mesh(geometry, material);
+
+        // 设置位置
+        marker.position.set(...markerData.position);
+
+        // 将标题和信息存储在标记对象的自定义属性中
+        marker.userData = {
+            title: markerData.title,
+            info: markerData.info
+        };
+
+        // 添加到场景
+        scene.add(marker);
+    });
+
+    // 添加点击事件监听器
+    window.addEventListener('click', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children);
+
+        if (intersects.length > 0) {
+            const intersectedObject = intersects[0].object;
+            if (intersectedObject.userData) {
+                // 显示信息
+                infoElement.style.display = 'block';
+                infoTitle.textContent = intersectedObject.userData.title;
+                infoDescription.textContent = intersectedObject.userData.info;
+                infoImage.src = intersectedObject.userData.image; // 动态加载图片
+            } else {
+                // 隐藏信息
+                infoElement.style.display = 'none';
+            }
+        } else {
+            // 隐藏信息
+            infoElement.style.display = 'none';
+        }
+    });
+}
 
 
 // 调用主函数并传入模型地址
