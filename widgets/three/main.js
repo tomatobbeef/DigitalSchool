@@ -3,9 +3,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-
-
-
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
 // 声明一个对象keyStates用来记录键盘事件状态
 const keyStates = {
     // 使用W、A、S、D按键来控制前、后、左、右运动
@@ -20,7 +19,7 @@ const keyStates = {
 let isRendering = false;
 let Moving = false;
 let scene, camera, renderer, controls, gs_viewer, player;
-const delta = 0.026;
+const delta = 0.046;
 const speed = 1.85; // 移动速度
 let mixer, walkingClip,idleClip,walkAction,idleAction;
 // 鼠标相关变量
@@ -188,6 +187,7 @@ function loadFBXModel(modelUrl,playerposition) {
             idleClip= player.animations[0]; // 假设动画文件中只有一个动画剪辑
             idleAction = mixer.clipAction(idleClip);
             idleAction.play();
+            addTagtoScene();
             animate();
           });
           function animate() {
@@ -216,7 +216,6 @@ function loadFBXModel(modelUrl,playerposition) {
 
             if (mixer) {  // 关键修改：只在移动时播放动画
                 mixer.update(delta);
-                console.log(Moving)
                 if(Moving){
                     walkAction.play();
                     idleAction.stop();
@@ -274,7 +273,7 @@ function addTagtoScene()
 {
     let markers = [];
 
-    fetch('markers.json') // 假设 JSON 文件名为 markers.json
+    fetch('http://localhost:5173/widgets/three/tags/markers.json') // 假设 JSON 文件名为 markers.json
         .then(response => response.json())
         .then(data => {
             markers = data;
@@ -287,27 +286,51 @@ const infoElement = document.getElementById('info');
 const infoTitle = document.getElementById('info-title');
 const infoDescription = document.getElementById('info-description');
 const infoImage = document.querySelector('#info img');
+const playButton = document.getElementById('play-button');
+// 创建 Raycaster 和鼠标位置
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const loader = new FontLoader();
+let audio = null;
 function createMarkers(markersData) {
     markersData.forEach(markerData => {
-        // 创建几何体
-        const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load('http://localhost:5173/src/assets/img/label.png'); // 替换为你的图片路径
 
-        // 解析颜色
-        const color = new THREE.Color(markerData.color);
+        // 创建 Sprite 材质
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
 
-        // 创建材质
-        const material = new THREE.MeshBasicMaterial({ color: color });
+        // 创建 Sprite 对象
+        const marker = new THREE.Sprite(spriteMaterial);
 
-        // 创建标记对象
-        const marker = new THREE.Mesh(geometry, material);
+        // 设置 Sprite 的大小（可以根据需要调整）
+        marker.scale.set(0.5, 0.5, 1);
 
         // 设置位置
         marker.position.set(...markerData.position);
+        
+        // loader.load('http://localhost:5173/src/assets/fonts/helvetiker_regular.typeface.json', (font) => {
+        //     const textGeometry = new TextGeometry(markerData.title, {
+        //         font:font,
+        //         size: 0.2,
+        //         height: 0.1
+        //     });
+        //     console.log(markerData.title)
+        //     const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        //     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        
+        //     // 将文字放置在 Sprite 的上方
+        //     textMesh.position.set(markerData.position[0],markerData.position[1]-0.2,markerData.position[2]); // 根据需要调整位置
+        //     scene.add(textMesh);
+        // })
+        
 
         // 将标题和信息存储在标记对象的自定义属性中
         marker.userData = {
             title: markerData.title,
-            info: markerData.info
+            info: markerData.info,
+            image:markerData.image,
+            audio: markerData.audio
         };
 
         // 添加到场景
@@ -321,21 +344,45 @@ function createMarkers(markersData) {
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(scene.children);
 
+        // 阻止点击信息框时关闭信息框
+        infoElement.addEventListener('click', (event) => {
+            event.stopPropagation(); // 阻止事件冒泡
+        });
+
         if (intersects.length > 0) {
             const intersectedObject = intersects[0].object;
+            if(!intersectedObject.userData.title){
+                return;
+            }
             if (intersectedObject.userData) {
                 // 显示信息
                 infoElement.style.display = 'block';
                 infoTitle.textContent = intersectedObject.userData.title;
                 infoDescription.textContent = intersectedObject.userData.info;
+                console.log(intersectedObject.userData.image)
                 infoImage.src = intersectedObject.userData.image; // 动态加载图片
+                // 添加播放按钮点击事件
+                playButton.addEventListener('click', () => {
+                    const audioPath = intersectedObject.userData.audio;
+                    if (!audio) {
+                        audio = new Audio(audioPath);
+                        audio.loop = false; // 设置音频不循环播放
+                    } else {
+                        audio.src = audioPath; // 如果音频对象已存在，更新音频路径
+                    }
+                    audio.play();
+                });
             } else {
                 // 隐藏信息
                 infoElement.style.display = 'none';
+                audio.pause()
+                audio.currentTime = 0;
             }
         } else {
             // 隐藏信息
             infoElement.style.display = 'none';
+            audio.pause()
+            audio.currentTime = 0;
         }
     });
 }

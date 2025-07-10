@@ -49,6 +49,8 @@
     <link rel="stylesheet" type="text/css" href="./lib/iview/styles/iview.css">
     <script type="text/javascript" src="./lib/iview/iview.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <!-- 引入JQ -->
     <script src="./lib/jquery/jquery-1.10.2.min.js"></script>
 
@@ -78,7 +80,7 @@
             display: none;
             position: absolute;
             top: 50%;
-            left: 50%;
+            left: 35%;
             transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.9);
             padding: 20px;
@@ -88,23 +90,28 @@
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
         #info img {
             width: 100%;
             border-radius: 10px 10px 0 0;
             margin-bottom: 10px;
         }
-
         #info h3 {
             margin: 10px 0;
             color: #333;
             font-size: 1.2em;
         }
-
         #info p {
             color: #666;
             font-size: 0.9em;
             line-height: 1.5;
+        }
+        #play-button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 
@@ -266,6 +273,9 @@
         <img src="marker.png" alt="Marker" style="width: 100%; border-radius: 10px 10px 0 0;">
         <h3 id="info-title"></h3>
         <p id="info-description"></p>
+        <button id="play-button" style="padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <i class="fas fa-play"></i> 播放介绍
+        </button>
     </div>
 
     <!-- <script type="module" src="/src/main.ts"></script> -->
