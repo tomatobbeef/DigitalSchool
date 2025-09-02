@@ -1659,16 +1659,6 @@ let app = new Vue({
                     }
 
                 }
-                else if (data.action === 'autowander') {
-                    window.postMessage({
-                        action: 'autowander',
-                    }, '*');
-                }
-                else if (data.action === 'thirdpersonwander') {
-                    window.postMessage({
-                        action: 'thirdpersonwander',
-                    }, '*');
-                }
             });
 
         },

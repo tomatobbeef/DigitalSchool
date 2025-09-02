@@ -113,6 +113,31 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #miniMap{
+            position:absolute;
+            left:20px;
+            top:80px;
+            width:400px;
+            height:200px;
+            border:2px solid #fff;
+            border-radius:8px;
+            overflow:hidden;
+            display: none;
+            }
+            #mapImg{
+            width:100%;
+            height:100%;
+            display:block;
+            }
+            #playerDot{
+            position:absolute;
+            width:8px;
+            height:8px;
+            background:rgb(110, 110, 245);
+            border-radius:50%;
+            transform:translate(-50%,-50%);
+            pointer-events:none;
+            }
     </style>
 
 </head>
@@ -135,7 +160,7 @@
             <div class="head-bg-l-l"><img src="./images/bg_l_l.png" alt=""></div>
             <div class="head-bg-r-r"><img src="./images/bg_r_r.png" alt=""></div>
             <div class="head-text">
-                <p style="margin-top: 0px;font-size:45px">数字孪生校园2.0</p>
+                <p style="margin-top: 0px;font-size:35px">数字孪生校园2.0</p>
                 <p style="margin-top: 0px;">Digital Twin School</p>
             </div>
             <div class="head-cont-l" style="color:#00FFE4;">
@@ -277,6 +302,11 @@
             <i class="fas fa-play"></i> 播放介绍
         </button>
     </div>
+
+    <div id="miniMap">
+        <img id="mapImg" src="src\assets\img\floor2.png" />
+        <div id="playerDot"></div>
+      </div>
 
     <!-- <script type="module" src="/src/main.ts"></script> -->
     <script src="main.vue"></script>

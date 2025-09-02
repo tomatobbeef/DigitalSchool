@@ -25,7 +25,21 @@ let mixer, walkingClip,idleClip,walkAction,idleAction;
 // 鼠标相关变量
 let isDragging = false; // 是否正在拖动鼠标
 let lastMouseX = 0; // 上一次鼠标水平位置
+let sitData;
 const rotationSpeed = 0.002; // 鼠标旋转速度（可以根据需要调整）
+
+// 获取信息显示元素
+const infoElement = document.getElementById('info');
+const infoTitle = document.getElementById('info-title');
+const infoDescription = document.getElementById('info-description');
+const infoImage = document.querySelector('#info img');
+const playButton = document.getElementById('play-button');
+const map = document.getElementById('miniMap');
+// 创建 Raycaster 和鼠标位置
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const loader = new FontLoader();
+let audio = null;
 
 // 键盘事件监听（更新后）
 document.addEventListener('keydown', (event) => {
@@ -187,7 +201,7 @@ function loadFBXModel(modelUrl,playerposition) {
             idleClip= player.animations[0]; // 假设动画文件中只有一个动画剪辑
             idleAction = mixer.clipAction(idleClip);
             idleAction.play();
-            addTagtoScene();
+            
             animate();
           });
           function animate() {
@@ -210,7 +224,7 @@ function loadFBXModel(modelUrl,playerposition) {
                     direction.crossVectors(player.up, direction).normalize();
                     player.position.add(direction.multiplyScalar(speed * delta));
                 }
-
+                updateMiniMap(player.position.x, player.position.z);
                 updateCamera();
             }
 
@@ -269,11 +283,11 @@ function updateCamera() {
     }
 }
 
-function addTagtoScene()
+function addTagtoScene(sitData)
 {
     let markers = [];
 
-    fetch('http://localhost:5173/widgets/three/tags/markers.json') // 假设 JSON 文件名为 markers.json
+    fetch(sitData) // 假设 JSON 文件名为 markers.json
         .then(response => response.json())
         .then(data => {
             markers = data;
@@ -281,17 +295,7 @@ function addTagtoScene()
         })
         .catch(error => console.error('Error loading markers:', error));
 }
-// 获取信息显示元素
-const infoElement = document.getElementById('info');
-const infoTitle = document.getElementById('info-title');
-const infoDescription = document.getElementById('info-description');
-const infoImage = document.querySelector('#info img');
-const playButton = document.getElementById('play-button');
-// 创建 Raycaster 和鼠标位置
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const loader = new FontLoader();
-let audio = null;
+
 function createMarkers(markersData) {
     markersData.forEach(markerData => {
         const textureLoader = new THREE.TextureLoader();
@@ -387,13 +391,47 @@ function createMarkers(markersData) {
     });
 }
 
+const worldSize = 100;              // 场景在 X、Z 方向总长
+const halfWorld = worldSize / 2;
+
+function updateMiniMap(x, z){
+    if(map.style.display == 'none'){
+        return;
+    }
+    // 把世界坐标 (-halfWorld~+halfWorld) 映射到 0~200px
+    const px = THREE.MathUtils.mapLinear(x, -halfWorld, halfWorld, 0, 200);
+    const pz = THREE.MathUtils.mapLinear(z, -halfWorld, halfWorld, 0, 200);
+
+    const dot = document.getElementById('playerDot');
+    dot.style.left = px + 'px';
+    dot.style.top  = pz + 'px';
+}
+
+
+function showmap(tag){
+    if(tag){
+        map.style.display = 'block';
+    }
+    else{
+        map.style.display = 'none';
+    }
+}
 
 // 调用主函数并传入模型地址
 // initThreeJS('src/assets/model/earth_center.splat');
-
+let mapvisibility = false
 window.addEventListener('message', function (event) {
     if (event.data.action === 'initThreeJS') {
+        console.log('接收到消息')
         const data = event.data.payload.data;
         initThreeJS(data.gsmodel,data.playerposition,data.scenePos,data.sceneRot);
+        sitData = data.sitData;
+    }
+    else if (event.data.action === 'showSit') {
+        addTagtoScene(sitData);
+    }
+    else if (event.data.action === 'showmap') {
+        mapvisibility = !mapvisibility
+        showmap(mapvisibility)
     }
 })

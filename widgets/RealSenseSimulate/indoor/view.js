@@ -49,23 +49,17 @@ window.onload = function () {
     });
 };
 
-function autowander(){
+function showSit(){
     // 向父页面发送消息
     window.parent.postMessage({
-        action: 'autowander', // 指定要调用的父页面方法
-        payload: {
-            data: "start",
-        }
+        action: 'showSit', // 指定要调用的父页面方法
     }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
 }
 
-function thirdpersonWander(){
+function showmap(){
     // 向父页面发送消息
     window.parent.postMessage({
-        action: 'thirdpersonwander', // 指定要调用的父页面方法
-        payload: {
-            data: "start",
-        }
+        action: 'showmap', // 指定要调用的父页面方法
     }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
 }
 

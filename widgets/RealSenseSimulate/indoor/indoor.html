@@ -70,7 +70,6 @@
     }
 
     .tool-thum {
-      transition: all 0.2s ease;
       width: 45px;
       height: 45px;
       margin: 0 auto;
@@ -78,12 +77,12 @@
       margin-bottom: 10px;
       /*background: #fd960f;*/
       cursor: pointer;
-      background: url("image/iconButtonBg.png") bottom center no-repeat;
+      background: url("../image/iconButtonBg.png") bottom center no-repeat;
       background-size: 100% 100%;
     }
 
     .tool-thum:hover {
-      background: url("image/iconButtonBg_h.png") bottom center no-repeat;
+      background: url("../image/iconButtonBg_h.png") bottom center no-repeat;
       background-size: 100% 100%;
     }
 
@@ -159,13 +158,13 @@
     进入
   </button>
   <div class="btn-group">
-    <div id="btn_measure_length" class="tool-btn" onclick="autowander()">
+    <div id="btn_measure_length" class="tool-btn" onclick="showSit()">
         <div class="tool-thum"><img src="../image/measure-length.svg"></div>
-        <span class="btn_none"> 自动漫游 </span>
+        <span class="btn_none"> 景点介绍 </span>
     </div>
-    <div id="btn_measure_length" class="tool-btn" onclick="addSnow()">
-        <div class="tool-thum"><img src="../image/measure-length.svg"></div>
-        <span class="btn_none"> 自主漫游 </span>
+    <div id="btn_measure_length" class="tool-btn" onclick="showmap()">
+        <div class="tool-thum"><img src="../image/measure-length2.svg"></div>
+        <span class="btn_none"> 地图导览 </span>
     </div>
   </div>
   <script type="module"></script>
