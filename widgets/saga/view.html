@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>SAGA 极速交互版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            background: #151515; 
+            color: #eee; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            overflow: hidden; 
+        }
+        
+        #sidebar { 
+            width: 280px; 
+            background: #1a1a1a; 
+            padding: 20px; 
+            box-shadow: 2px 0 15px rgba(0,0,0,0.8); 
+            z-index: 10; 
+            display: flex; 
+            flex-direction: column; 
+            border-right: 1px solid #333;
+        }
+        
+        #viewport { 
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background: #000; 
+            position: relative; 
+            overflow: hidden;
+        }
+        
+        canvas { 
+            width: 100%; 
+            height: 100%; 
+            display: block;
+            cursor: grab;
+        }
+        
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        h3 { 
+            margin-top: 0; 
+            border-bottom: 2px solid #44abff; 
+            padding-bottom: 12px; 
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group { 
+            margin-bottom: 20px; 
+            transition: opacity 0.3s; 
+        }
+        
+        label { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 8px; 
+            font-size: 13px; 
+            color: #bbb; 
+        }
+        
+        select, input[type="range"] { 
+            width: 100%; 
+            padding: 10px; 
+            background: #2a2a2a; 
+            color: white; 
+            border: 1px solid #444; 
+            border-radius: 6px; 
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        select:focus, input[type="range"]:focus {
+            border-color: #44abff;
+        }
+
+        /* 禁用状态的样式 */
+        .disabled-ui { 
+            opacity: 0.4; 
+            pointer-events: none; 
+        }
+
+        .btn-reset { 
+            width: 100%; 
+            padding: 12px; 
+            background: #444; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold; 
+            transition: all 0.2s; 
+            margin-bottom: 15px; 
+        }
+        
+        .btn-reset:hover {
+            background: #555;
+        }
+        
+        .btn-reset.active { 
+            background: #d93838; 
+        }
+        
+        .btn-reset.active:hover { 
+            background: #ff4a4a; 
+        }
+
+        .tips { 
+            margin-top: auto; 
+            padding: 15px; 
+            background: #252525; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            color: #888; 
+            line-height: 1.8; 
+            border: 1px solid #333;
+        }
+        
+        .highlight { 
+            color: #44abff; 
+            font-weight: bold; 
+        }
+        
+        .warn { 
+            color: #ff9800; 
+            font-weight: bold; 
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #333;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .status-dot.connected {
+            background: #4caf50;
+            box-shadow: 0 0 8px #4caf50;
+        }
+        
+        .status-dot.error {
+            background: #f44336;
+            box-shadow: 0 0 8px #f44336;
+        }
+        
+        .status-dot.connecting {
+            background: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .fps-counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.8);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #44abff;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>🎮 SAGA 控制面板</h3>
+
+        <div id="advancedControls" class="disabled-ui">
+            <div class="control-group">
+                <label>展示模式</label>
+                <select id="modeSelect">
+                    <option value="rgb">1. 原始场景 (RGB)</option>
+                    <option value="segment">2. 高亮分割 (Segment)</option>
+                    <option value="similarity">3. 相似度热力图 (Similarity)</option>
+                    <option value="pca">4. 全局特征图 (PCA)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label><span>分割阈值</span> <span id="valThreshold" class="highlight">0.75</span></label>
+                <input type="range" id="thresholdRange" min="0" max="1" step="0.01" value="0.75">
+            </div>
+
+            <div class="control-group">
+                <label><span>特征尺度</span> <span id="valScale" class="highlight">0.5</span></label>
+                <input type="range" id="scaleRange" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+
+        <button id="resetBtn" class="btn-reset" onclick="resetSegmentation()">🗑️ 清除分割效果</button>
+
+        <div class="tips">
+            <strong>操作指南：</strong><br>
+            • <span class="highlight">左键拖拽：</span> 旋转视角<br>
+            • <span class="warn">双击物体：</span> 触发智能分割<br>
+            • <span class="highlight">滚轮滚动：</span> 缩放视角<br>
+            • <span class="highlight">快捷键 R：</span> 清除分割
+        </div>
+    </div>
+
+    <div id="viewport">
+        <canvas id="mainCanvas"></canvas>
+        <div class="fps-counter" id="fpsCounter">FPS: --</div>
+        <div class="status-bar">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">正在连接...</span>
+        </div>
+    </div>
+
+    <script>
+        // ====== 配置 ======
+        const WS_URL = 'ws://localhost:8000/ws';  // SAGA 服务地址
+        const FPS_UPDATE_INTERVAL = 500;  // FPS 更新间隔(ms)
+        
+        // ====== DOM 元素 ======
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const fpsCounter = document.getElementById('fpsCounter');
+        const advancedControls = document.getElementById('advancedControls');
+        const modeSelect = document.getElementById('modeSelect');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // ====== 状态变量 ======
+        let ws = null;
+        let isConnected = false;
+        let frameCount = 0;
+        let lastFpsTime = Date.now();
+        
+        // ====== Canvas 自适应 ======
+        function resizeCanvas() {
+            const viewport = document.getElementById('viewport');
+            const rect = viewport.getBoundingClientRect();
+            canvas.width = Math.floor(rect.width);
+            canvas.height = Math.floor(rect.height);
+            console.log(`Canvas resized: ${canvas.width}x${canvas.height}`);
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // ====== 更新状态显示 ======
+        function updateStatus(status, message) {
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = message;
+        }
+        
+        // ====== WebSocket 连接 ======
+        function connectWebSocket() {
+            updateStatus('connecting', '正在连接...');
+            
+            try {
+                ws = new WebSocket(WS_URL);
+                
+                ws.onopen = () => {
+                    console.log('✅ WebSocket 已连接');
+                    isConnected = true;
+                    updateStatus('connected', '已连接');
+                    // 发送初始消息
+                    ws.send(JSON.stringify({type: 'init'}));
+                };
+                
+                ws.onclose = () => {
+                    console.log('❌ WebSocket 连接已关闭');
+                    isConnected = false;
+                    updateStatus('error', '连接断开，3秒后重试...');
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket 错误:', error);
+                    isConnected = false;
+                    updateStatus('error', '连接错误');
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.image) {
+                            displayImage(data.image);
+                            frameCount++;
+                        }
+                    } catch (e) {
+                        console.error('处理消息错误:', e);
+                    }
+                };
+            } catch (e) {
+                console.error('创建 WebSocket 失败:', e);
+                updateStatus('error', '连接失败');
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+        
+        // ====== 显示图像 ======
+        function displayImage(base64Image) {
+            const img = new Image();
+            img.onload = () => {
+                // 清除画布
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 计算缩放比例保持宽高比
+                const scale = Math.min(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
+                
+                const scaledWidth = img.width * scale;
+                const scaledHeight = img.height * scale;
+                const x = (canvas.width - scaledWidth) / 2;
+                const y = (canvas.height - scaledHeight) / 2;
+                
+                // 绘制图像
+                ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            };
+            img.onerror = () => {
+                console.error('图像加载失败');
+            };
+            img.src = 'data:image/jpeg;base64,' + base64Image;
+        }
+        
+        // ====== FPS 计数器 ======
+        setInterval(() => {
+            const now = Date.now();
+            const fps = Math.round(frameCount * 1000 / (now - lastFpsTime));
+            fpsCounter.textContent = `FPS: ${fps}`;
+            frameCount = 0;
+            lastFpsTime = now;
+        }, FPS_UPDATE_INTERVAL);
+        
+        // ====== 同步参数给后端 ======
+        function syncParams() {
+            if (!isConnected) return;
+            
+            const mode = modeSelect.value;
+            const threshold = document.getElementById('thresholdRange').value;
+            const scale = document.getElementById('scaleRange').value;
+            
+            document.getElementById('valThreshold').innerText = threshold;
+            document.getElementById('valScale').innerText = scale;
+            
+            ws.send(JSON.stringify({ 
+                type: 'update_params', 
+                mode: mode, 
+                threshold: parseFloat(threshold), 
+                scale: parseFloat(scale) 
+            }));
+        }
+        
+        // ====== UI 控制 ======
+        function lockUI() {
+            advancedControls.classList.add('disabled-ui');
+            resetBtn.classList.remove('active');
+            modeSelect.value = 'rgb';
+            syncParams();
+        }
+        
+        function unlockUI() {
+            advancedControls.classList.remove('disabled-ui');
+            resetBtn.classList.add('active');
+            modeSelect.value = 'segment';
+            syncParams();
+        }
+        
+        function resetSegmentation() {
+            if (!isConnected) return;
+            if (advancedControls.classList.contains('disabled-ui')) return;
+            
+            ws.send(JSON.stringify({ type: 'reset' }));
+            lockUI();
+        }
+        
+        // ====== 事件绑定 ======
+        modeSelect.onchange = syncParams;
+        document.getElementById('thresholdRange').oninput = syncParams;
+        document.getElementById('scaleRange').oninput = syncParams;
+        
+        // ====== 鼠标交互 ======
+        let isDragging = false;
+        let lastX = 0;
+        let lastY = 0;
+        let lastMoveTime = 0;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+        
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging || !isConnected) return;
+            
+            const now = Date.now();
+            if (now - lastMoveTime > 30) {  // 节流 30ms
+                const dx = (e.clientX - lastX) * -1;
+                const dy = (e.clientY - lastY) * -1;
+                
+                if (dx !== 0 || dy !== 0) {
+                    ws.send(JSON.stringify({ type: 'move', dx: dx, dy: dy }));
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    lastMoveTime = now;
+                }
+            }
+        });
+        
+        // ====== 双击分割 ======
+        // 后端渲染尺寸（需与 opt.width/opt.height 一致）
+        const BACKEND_WIDTH = 1080;
+        const BACKEND_HEIGHT = 600;
+        
+        canvas.addEventListener('dblclick', (e) => {
+            if (!isConnected) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            // 将点击位置归一化到 0-1，再映射到后端渲染尺寸
+            const normX = (e.clientX - rect.left) / rect.width;
+            const normY = (e.clientY - rect.top) / rect.height;
+            const clickX = normX * BACKEND_WIDTH;
+            const clickY = normY * BACKEND_HEIGHT;
+            
+            console.log(`Double click: 屏幕(${e.clientX}, ${e.clientY}) -> 归一化(${normX.toFixed(3)}, ${normY.toFixed(3)}) -> 后端(${clickX.toFixed(1)}, ${clickY.toFixed(1)})`);
+            
+            ws.send(JSON.stringify({ type: 'click', x: clickX, y: clickY }));
+            unlockUI();
+        });
+        
+        // ====== 滚轮缩放 ======
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (!isConnected) return;
+            
+            const delta = e.deltaY > 0 ? -1 : 1;
+            ws.send(JSON.stringify({ type: 'zoom', delta: delta }));
+        }, { passive: false });
+        
+        // ====== 键盘快捷键 ======
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') {
+                resetSegmentation();
+            }
+        });
+        
+        // ====== 启动连接 ======
+        console.log('🚀 SAGA Client 启动中...');
+        connectWebSocket();
+    </script>
+</body>
+</html>

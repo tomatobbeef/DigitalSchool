@@ -138,6 +138,43 @@
             transform:translate(-50%,-50%);
             pointer-events:none;
             }
+
+        /* SAGA 容器样式 */
+        #sagaContainer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            background: #151515;
+            z-index: 100;
+        }
+        
+        #sagaContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .saga-exit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            padding: 10px 20px;
+            background: #d93838;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .saga-exit-btn:hover {
+            background: #ff4a4a;
+            transform: scale(1.05);
+        }
     </style>
 
 </head>
@@ -186,6 +223,8 @@
             </div>
         </div>
 
+
+
         <div class="nav-bottom-box" v-if="navNewBool" data-step="1" data-intro="导航栏可帮助您快捷选择分类!"
             v-show="(!mapSwitch)&&switchstatues == 2">
             <div @click="openPopup('widgets/tucengguanli/view.html')"
@@ -221,6 +260,12 @@
                 <div>实时模型分析</div>
             </div>
 
+            <div @click="openSaga()"
+                :class="navState.indexOf('智能分割')!=-1?'nav-bottom-box-item-act':''">
+                <div><img src="./images/jiedaoquyu.png" alt=""></div>
+                <div>智能分割</div>
+            </div>
+
             <div @click="openPopup('widgets/DigitalUniversity/view.html')"
                 :class="navState.indexOf('数字校园算法')!=-1?'nav-bottom-box-item-act':''">
                 <div><img src="./images/jingdian.png" alt=""></div>
@@ -251,8 +296,12 @@
                 <button id="buttonleft" @click="expandLeft">&lt;&lt;</button> 
                 <button id="buttonright" @click="expandRight">&gt;&gt;</button>
             </div>
-            <div id="three" :style="{ width: rightWidth }"></div>
+            <div id="three" :style="{ width: rightWidth, display: sagaVisible ? 'none' : 'block' }"></div>
             <div id="cesiumMap" :style="{ width: rightWidth }"></div>
+            <div id="sagaContainer" :style="{ width: rightWidth, display: sagaVisible ? 'block' : 'none' }">
+                <iframe id="sagaFrame" src="widgets/saga/view.html" frameborder="0" width="100%" height="100%"></iframe>
+            </div>
+            <button v-if="sagaVisible" class="saga-exit-btn" @click="closeSaga">退出分割</button>
         </div>
 
         <!-- swiper图片预览模块 --> 

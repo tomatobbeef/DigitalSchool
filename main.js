@@ -156,6 +156,7 @@ let app = new Vue({
         // new
         isOpen: false,
         externalUrl: 'external.html', // 替换为您要加载的 HTML 文件的路径
+        sagaVisible: false,
         iframeVisible: false,
         iframeSrc: '',
         isMapVisible: false,
@@ -620,6 +621,17 @@ let app = new Vue({
         },
         closePopup() {
             this.isOpen = false;
+        },
+        openSaga() {
+            // 只有当当前显示的是 three 时才能打开 SAGA
+            if (document.getElementById('three').style.display !== 'none') {
+                this.sagaVisible = true;
+            } else {
+                this.$Message.warning('请先切换到三维视图模式');
+            }
+        },
+        closeSaga() {
+            this.sagaVisible = false;
         },
         // 设置时间
         dataSet() {
