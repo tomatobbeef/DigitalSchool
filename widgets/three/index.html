@@ -4,13 +4,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>3DGS Indoor Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+        }
+
+        #threemap {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* ==================== 测量工具栏 ==================== */
+        #measure-toolbar {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: none;
+            background: linear-gradient(to right, rgba(11, 21, 44, 0.95), rgba(11, 21, 44, 0.7));
+            border: 1px solid #27bdb7;
+            border-radius: 8px;
+            padding: 8px 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            user-select: none;
+            backdrop-filter: blur(8px);
+        }
+
+        #measure-toolbar.active {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .measure-title {
+            color: #00FFE4;
+            font-size: 13px;
+            font-weight: 600;
+            padding-right: 10px;
+            border-right: 1px solid rgba(0, 255, 228, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .measure-btn {
+            background: rgba(0, 255, 228, 0.08);
+            border: 1px solid rgba(0, 255, 228, 0.4);
+            color: #00FFE4;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: inherit;
+        }
+
+        .measure-btn:hover {
+            background: rgba(0, 255, 228, 0.2);
+            border-color: #00FFE4;
+            box-shadow: 0 0 8px rgba(0, 255, 228, 0.4);
+        }
+
+        .measure-btn.active {
+            background: rgba(0, 255, 228, 0.3);
+            border-color: #00FFE4;
+            box-shadow: 0 0 12px rgba(0, 255, 228, 0.6);
+        }
+
+        .measure-btn .icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .measure-btn-sep {
+            width: 1px;
+            height: 20px;
+            background: rgba(0, 255, 228, 0.3);
+            margin: 0 4px;
+        }
+
+        .measure-btn-danger {
+            background: rgba(255, 80, 80, 0.1);
+            border-color: rgba(255, 80, 80, 0.5);
+            color: #ff8080;
+        }
+
+        .measure-btn-danger:hover {
+            background: rgba(255, 80, 80, 0.25);
+            border-color: #ff5050;
+            color: #fff;
+        }
+
+        .measure-btn-close {
+            background: rgba(217, 56, 56, 0.2);
+            border-color: rgba(255, 80, 80, 0.6);
+            color: #ff8080;
+        }
+
+        .measure-btn-close:hover {
+            background: #d93838;
+            border-color: #ff5050;
+            color: #fff;
+        }
+
+        /* ==================== 测量状态提示 ==================== */
+        #measure-hint {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: none;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00FFE4;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid #27bdb7;
+            box-shadow: 0 0 12px rgba(0, 255, 228, 0.3);
+            pointer-events: none;
+        }
+
+        #measure-hint.show {
+            display: block;
+            animation: fadeInOut 0.3s ease;
+        }
+
+        @keyframes fadeInOut {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ==================== 测量结果面板 ==================== */
+        #measure-result-panel {
+            position: absolute;
+            top: 80px;
+            right: 12px;
+            z-index: 100;
+            display: none;
+            background: rgba(11, 21, 44, 0.95);
+            border: 1px solid #27bdb7;
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 240px;
+            color: #00FFE4;
+            font-size: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        #measure-result-panel.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0, 255, 228, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            color: #bffbff;
+        }
+
+        .result-row .label {
+            color: #888;
+        }
+
+        .result-row .value {
+            color: #00FFE4;
+            font-weight: 600;
+            font-family: 'Consolas', monospace;
+        }
+
+        .result-clear {
+            margin-top: 10px;
+            width: 100%;
+            padding: 6px;
+            background: rgba(217, 56, 56, 0.2);
+            border: 1px solid rgba(255, 80, 80, 0.5);
+            color: #ff8080;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .result-clear:hover {
+            background: #d93838;
+            color: #fff;
+        }
+
+        /* ==================== 3D 标签 ==================== */
+        .measure-3d-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: #00FFE4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'Consolas', monospace;
+            border: 1px solid rgba(0, 255, 228, 0.5);
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 0 8px rgba(0, 255, 228, 0.3);
+            z-index: 50;
+        }
+
+        /* ==================== 测量光标 ==================== */
+        #measure-mode-distance #threemap canvas,
+        #measure-mode-area #threemap canvas,
+        #measure-mode-height #threemap canvas {
+            cursor: crosshair !important;
+        }
+
+        /* ==================== 已存在元素补充样式 ==================== */
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 240px;
+            z-index: 50;
+        }
+
+        #info img {
+            max-width: 100%;
+            border-radius: 4px;
+        }
+
+        #play-button {
+            background: #00FFE4;
+            color: #000;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        #miniMap {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #27bdb7;
+            border-radius: 50%;
+            display: none;
+            z-index: 50;
+        }
+
+        #playerDot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00FFE4;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 6px #00FFE4;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="threemap" style="width: 100vw;height: 100vh;"></div>
-    <script type="module" src="./main.js">
-    </script>
+    <div id="threemap" style="width: 100vw; height: 100vh;">
+        <!-- 测量工具栏 -->
+        <div id="measure-toolbar">
+            <span class="measure-title">📏 测量工具</span>
+            <button class="measure-btn" id="btn-measure-distance" onclick="setMeasureMode('distance')">
+                <span class="icon">📏</span><span>距离</span>
+            </button>
+            <button class="measure-btn" id="btn-measure-area" onclick="setMeasureMode('area')">
+                <span class="icon">⬛</span><span>面积</span>
+            </button>
+            <button class="measure-btn" id="btn-measure-height" onclick="setMeasureMode('height')">
+                <span class="icon">📐</span><span>高度</span>
+            </button>
+            <span class="measure-btn-sep"></span>
+            <button class="measure-btn measure-btn-danger" onclick="clearMeasure()">
+                <span class="icon">🗑️</span><span>清除</span>
+            </button>
+            <button class="measure-btn measure-btn-close" onclick="closeMeasure()">
+                <span class="icon">✕</span><span>关闭</span>
+            </button>
+        </div>
+
+        <!-- 测量提示 -->
+        <div id="measure-hint"></div>
+
+        <!-- 测量结果面板 -->
+        <div id="measure-result-panel">
+            <div class="result-title">
+                <span>📊 测量结果</span>
+                <span id="result-count">0</span>
+            </div>
+            <div id="result-list"></div>
+            <button class="result-clear" onclick="clearMeasure()">清除全部</button>
+        </div>
+
+        <!-- 原有信息元素 -->
+        <div id="info" style="display: none;">
+            <h3 id="info-title"></h3>
+            <p id="info-description"></p>
+            <img src="" alt="">
+            <button id="play-button">▶ 播放语音</button>
+        </div>
+
+        <!-- 原有小地图 -->
+        <div id="miniMap">
+            <div id="playerDot"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
 </body>
 
 </html>

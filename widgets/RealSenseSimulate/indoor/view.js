@@ -63,6 +63,13 @@ function showmap(){
     }, '*'); // 指定目标页面的来源（'*'表示任何来源，建议指定具体来源）
 }
 
+// 发送"打开测量工具"消息到 three.js 窗口
+function startMeasure(){
+    window.parent.postMessage({
+        action: 'startMeasure', // 通知 three.js 窗口显示测量工具栏
+    }, '*');
+}
+
 function smartSegment(){
     // 在小窗口内切换到 SAGA 智能分割视图
     // 隐藏原始视图（按钮组），显示 SAGA 视图
