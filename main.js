@@ -1631,9 +1631,10 @@ let app = new Vue({
 
                 // 获取消息内容
                 const data = event.data;
-                const position = data.payload.data.position
                 // 根据消息内容调用 Vue 实例中的方法
+                // 注：smartSegment/closeSaga 消息已交由 indoor.html 内部处理
                 if (data.action === 'indoor') {
+                    const position = data.payload.data.position
                     if (data.payload.data.bInCampus == 0) {
                         viewer.scene.camera.flyTo({
                             destination: new Cesium.Cartesian3(position[0], position[1], position[2]), // 世界坐标点
