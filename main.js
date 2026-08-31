@@ -1671,6 +1671,16 @@ let app = new Vue({
                         console.log('post message')
                     }
 
+                } else if (data.action === 'startMeasure') {
+                    const overlay = document.getElementById('measure-panel-overlay');
+                    const iframe = document.getElementById('newht');
+                    if (overlay) overlay.style.display = 'flex';
+                    if (iframe) iframe.style.display = 'none';
+                } else if (data.action === 'measureClosed') {
+                    const overlay = document.getElementById('measure-panel-overlay');
+                    const iframe = document.getElementById('newht');
+                    if (overlay) overlay.style.display = 'none';
+                    if (iframe) iframe.style.display = '';
                 }
             });
 
@@ -5020,4 +5030,12 @@ function initPolylineTrailLinkMaterialProperty(data) {
 
 
 }
+/* ---- 测量面板返回（全局） ---- */
+window.exitMeasurePanel = function() {
+    const overlay = document.getElementById('measure-panel-overlay');
+    const iframe = document.getElementById('newht');
+    if (overlay) overlay.style.display = 'none';
+    if (iframe) iframe.style.display = '';
+    if (window.closeMeasure) window.closeMeasure();
+};
 

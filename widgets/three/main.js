@@ -159,7 +159,7 @@ function initThreeJS(modelUrl,playerposition,scenePos,sceneRot) {
     loadGaussianModel(modelUrl, gs_viewer)
         .then(() => {
             // 修改高斯模型的位置
-            gs_viewer.splatMesh.position.set(scenePos.x, scenePos.x, scenePos.x); // 将模型移动到 (10, 0, 0)
+            gs_viewer.splatMesh.position.set(scenePos.x, scenePos.y, scenePos.z); // 将模型移动到指定位置
 
             // 修改高斯模型的旋转
             // gs_viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(sceneRot.x), THREE.MathUtils.degToRad(sceneRot.y), THREE.MathUtils.degToRad(sceneRot.z)); // 绕 Y 轴旋转 45 度
@@ -454,6 +454,10 @@ window.addEventListener('message', function (event) {
             showMeasureToolbar();
             setMeasureMode(event.data.payload && event.data.payload.mode);
         }
+    }
+    // 实时数据浮窗
+    else if (event.data.action === 'toggleDataPanel') {
+        toggleDataPanel();
     }
 })
 
@@ -777,7 +781,18 @@ function handleMeasureClick(event) {
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    // 高斯点云(splatMesh)位于 gs_viewer.splatScene 中，并不在 scene.children 里
+    // （gs_viewer 单独 render），必须把它加入射线检测目标，否则点击点云永远“未命中”
+    const targets = [];
+    if (scene) {
+        for (const c of scene.children) targets.push(c);
+    }
+    if (gs_viewer && gs_viewer.splatMesh) {
+        gs_viewer.splatMesh.updateMatrixWorld(true);
+        targets.push(gs_viewer.splatMesh);
+    }
+    const intersects = raycaster.intersectObjects(targets, true);
 
     if (intersects.length === 0) {
         showHint('未命中 3D 目标，请对准场景内的物体点击', 2500);
@@ -862,3 +877,129 @@ window.setMeasureMode = setMeasureMode;
 window.clearMeasure = clearMeasure;
 window.closeMeasure = closeMeasure;
 window.showMeasureToolbar = showMeasureToolbar;
+
+// ==================== 实时数据浮窗模块 ====================
+let dataPanelVisible = false;
+let dataPanelTimer = null;
+let currentFPS = 0;
+let lastFpsTime = performance.now();
+let dataPanelLastFrame = 0;
+
+function toggleDataPanel() {
+    const panel = document.getElementById('data-panel');
+    if (!panel) return;
+    dataPanelVisible = !dataPanelVisible;
+    if (dataPanelVisible) {
+        panel.classList.add('show');
+        startDataPanelUpdates();
+    } else {
+        panel.classList.remove('show');
+        stopDataPanelUpdates();
+    }
+}
+
+function closeDataPanel() {
+    const panel = document.getElementById('data-panel');
+    if (!panel) return;
+    dataPanelVisible = false;
+    panel.classList.remove('show');
+    stopDataPanelUpdates();
+}
+
+function startDataPanelUpdates() {
+    if (dataPanelTimer) return;
+    dataPanelLastFrame = renderer && renderer.info && renderer.info.render ? (renderer.info.render.frame || 0) : 0;
+    lastFpsTime = performance.now();
+    // 每 500ms 统一更新 FPS + 面板数据
+    dataPanelTimer = setInterval(() => {
+        calcFps();
+        refreshDataPanel();
+    }, 500);
+}
+
+function stopDataPanelUpdates() {
+    if (dataPanelTimer) { clearInterval(dataPanelTimer); dataPanelTimer = null; }
+}
+
+function calcFps() {
+    const now = performance.now();
+    const elapsed = (now - lastFpsTime) / 1000;
+    // 使用 renderer.info.render.frame 获取实际帧数（如果可用）
+    if (renderer && renderer.info && renderer.info.render) {
+        const totalFrames = renderer.info.render.frame || 0;
+        if (dataPanelLastFrame !== totalFrames && elapsed > 0) {
+            currentFPS = Math.round((totalFrames - dataPanelLastFrame) / elapsed);
+            dataPanelLastFrame = totalFrames;
+        }
+    } else {
+        // 回退：用时间差估算
+        const deltaMs = now - lastFpsTime;
+        currentFPS = deltaMs > 0 ? Math.round(1000 / deltaMs) : 0;
+    }
+    lastFpsTime = now;
+}
+
+function refreshDataPanel() {
+    if (!dataPanelVisible) return;
+
+    const setVal = (id, val, cls) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = val;
+            el.className = 'dp-value' + (cls ? ' ' + cls : '');
+        }
+    };
+
+    // FPS
+    const fps = currentFPS || 0;
+    const fpsColor = fps >= 50 ? 'good' : (fps >= 25 ? '' : 'warn');
+    setVal('dp-fps', String(fps), fpsColor);
+
+    // Resolution
+    if (renderer) {
+        const size = renderer.getSize(new THREE.Vector2());
+        setVal('dp-resolution', `${Math.round(size.x)} × ${Math.round(size.y)}`);
+    }
+
+    // Camera position
+    if (camera) {
+        setVal('dp-camx', camera.position.x.toFixed(2));
+        setVal('dp-camy', camera.position.y.toFixed(2));
+        setVal('dp-camz', camera.position.z.toFixed(2));
+    }
+
+    // Scene objects
+    if (scene) {
+        setVal('dp-objects', String(scene.children.length));
+    }
+
+    // Splat count
+    try {
+        if (gs_viewer && gs_viewer.splatMesh) {
+            const sc = gs_viewer.splatMesh.getSplatCount();
+            setVal('dp-splats', typeof sc === 'number' ? sc.toLocaleString() : String(sc || '--'));
+        } else {
+            setVal('dp-splats', '--');
+        }
+    } catch (e) {
+        setVal('dp-splats', '--');
+    }
+
+    // Draw calls
+    if (renderer && renderer.info) {
+        setVal('dp-drawcalls', String(renderer.info.render.calls || '--'));
+    } else {
+        setVal('dp-drawcalls', '--');
+    }
+
+    // Timestamp
+    const timeEl = document.getElementById('dp-time');
+    if (timeEl) {
+        const now = new Date();
+        timeEl.textContent = `更新 ${now.toLocaleTimeString()}`;
+    }
+}
+
+// 暴露到 window
+window.toggleDataPanel = toggleDataPanel;
+window.closeDataPanel = closeDataPanel;

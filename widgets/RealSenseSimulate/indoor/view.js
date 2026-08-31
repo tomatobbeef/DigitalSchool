@@ -70,6 +70,13 @@ function startMeasure(){
     }, '*');
 }
 
+// 发送"切换数据浮窗"消息到 three.js 窗口
+function toggleDataPanel(){
+    window.parent.postMessage({
+        action: 'toggleDataPanel',
+    }, '*');
+}
+
 function smartSegment(){
     // 在小窗口内切换到 SAGA 智能分割视图
     // 隐藏原始视图（按钮组），显示 SAGA 视图

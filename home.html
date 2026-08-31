@@ -139,6 +139,72 @@
             pointer-events:none;
             }
 
+    /* ==================== 测量工具栏（popup面板内） ==================== */
+        #measure-toolbar {
+            display: none; flex-direction: column; gap: 10px;
+            padding: 10px 12px;
+            pointer-events: auto;
+        }
+        #measure-toolbar.active { display: flex; }
+        .measure-title { color: #00FFE4; font-size: 13px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid rgba(0, 255, 228, 0.3); display: flex; align-items: center; gap: 6px; }
+        .measure-btn { background: rgba(0, 255, 228, 0.08); border: 1px solid rgba(0, 255, 228, 0.4); color: #00FFE4; padding: 8px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; font-family: inherit; width: 100%; justify-content: center; }
+        .measure-btn:hover { background: rgba(0, 255, 228, 0.2); border-color: #00FFE4; box-shadow: 0 0 8px rgba(0, 255, 228, 0.4); }
+        .measure-btn.active { background: rgba(0, 255, 228, 0.3); border-color: #00FFE4; box-shadow: 0 0 12px rgba(0, 255, 228, 0.6); }
+        .measure-btn .icon { font-size: 14px; line-height: 1; }
+        .measure-btn-sep { width: 100%; height: 1px; background: rgba(0, 255, 228, 0.3); }
+        .measure-btn-danger { background: rgba(255, 80, 80, 0.1); border-color: rgba(255, 80, 80, 0.5); color: #ff8080; }
+        .measure-btn-danger:hover { background: rgba(255, 80, 80, 0.25); border-color: #ff5050; color: #fff; }
+        .measure-btn-close { background: rgba(217, 56, 56, 0.2); border-color: rgba(255, 80, 80, 0.6); color: #ff8080; }
+        .measure-btn-close:hover { background: #d93838; border-color: #ff5050; color: #fff; }
+        .measure-btn-back { background: rgba(0, 180, 255, 0.1); border: 1px solid rgba(0, 180, 255, 0.5); color: #40b8ff; margin-top: 6px; }
+        .measure-btn-back:hover { background: rgba(0, 180, 255, 0.25); border-color: #40b8ff; color: #fff; box-shadow: 0 0 8px rgba(0, 180, 255, 0.4); }
+        #measure-hint { display: none; background: rgba(0, 0, 0, 0.5); color: #00FFE4; padding: 8px 12px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(0, 255, 228, 0.3); text-align: center; }
+        #measure-hint.show { display: block; }
+        #measure-result-panel { display: none; flex-direction: column; gap: 4px; padding: 8px 0; border-top: 1px solid rgba(0, 255, 228, 0.2); }
+        #measure-result-panel.show { display: flex; }
+        .result-title { font-size: 12px; font-weight: 600; color: #00FFE4; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .result-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; color: #bffbff; }
+        .result-row .label { color: #7eb8da; }
+        .result-row .value { color: #00FFE4; font-weight: 600; font-family: 'Consolas', monospace; font-size: 11px; }
+        .result-clear { margin-top: 6px; width: 100%; padding: 6px; background: rgba(217, 56, 56, 0.2); border: 1px solid rgba(255, 80, 80, 0.5); color: #ff8080; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+        .result-clear:hover { background: #d93838; color: #fff; }
+        .measure-3d-label { position: absolute; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.75); color: #00FFE4; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: 'Consolas', monospace; border: 1px solid rgba(0, 255, 228, 0.5); pointer-events: none; white-space: nowrap; box-shadow: 0 0 8px rgba(0, 255, 228, 0.3); z-index: 50; }
+    /* ==================== 实时数据浮窗（3DGS 室内） ==================== */
+        #data-panel { position: absolute; top: 12px; left: 12px; z-index: 100; display: none; background: rgba(11, 21, 44, 0.92); border: 1px solid #27bdb7; border-radius: 10px; min-width: 220px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(39, 189, 183, 0.2); backdrop-filter: blur(12px); user-select: none; overflow: hidden; pointer-events: auto; }
+        #data-panel.show { display: block; }
+        .dp-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(0, 255, 228, 0.08); border-bottom: 1px solid rgba(0, 255, 228, 0.2); }
+        .dp-header-title { color: #00FFE4; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .dp-close { background: none; border: none; color: #ff8080; font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; line-height: 1; }
+        .dp-close:hover { background: rgba(255, 80, 80, 0.3); color: #fff; }
+        .dp-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+        .dp-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 12px; }
+        .dp-label { color: #7eb8da; }
+        .dp-value { color: #00FFE4; font-family: 'Consolas', 'Courier New', monospace; font-weight: 600; font-size: 12px; }
+        .dp-value.warn { color: #ffb020; }
+        .dp-value.good { color: #4caf50; }
+        .dp-sep { height: 1px; background: rgba(0, 255, 228, 0.15); margin: 2px 0; }
+        .dp-footer { padding: 6px 14px; border-top: 1px solid rgba(0, 255, 228, 0.2); font-size: 10px; color: #4a6a7a; text-align: right; }
+    /* popup关闭按钮放到底部 */
+        .popup-content > button {
+            top: auto;
+            bottom: 10px;
+            right: 10px;
+            z-index: 10;
+            width: 28px; height: 28px;
+            border: 1px solid rgba(255, 80, 80, 0.5);
+            background: rgba(217, 56, 56, 0.2);
+            color: #ff8080;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup-content > button:hover {
+            background: #d93838;
+            color: #fff;
+        }
     </style>
 
 </head>
@@ -183,6 +249,25 @@
             <div class="popup-content">
                 <iframe id="newht" :src="externalUrl" frameborder="0" width="100%" height="100%"
                     style="border-style: solid;background:linear-gradient(to right, rgba(011, 21, 44, 0.4), rgba(11, 21, 44, 0.9));border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe>
+                <!-- 测量面板（覆盖 iframe） -->
+                <div id="measure-panel-overlay" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:3; background:linear-gradient(to right, rgba(11, 21, 44, 0.4), rgba(11, 21, 44, 0.9)); border:1px solid #27bdb7; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; padding:30vh 12px 15vh 12px; box-sizing:border-box;">
+                    <div id="measure-toolbar">
+                        <span class="measure-title">📏 测量工具</span>
+                        <button class="measure-btn" id="btn-measure-distance" onclick="setMeasureMode('distance')"><span class="icon">📏</span><span>距离</span></button>
+                        <button class="measure-btn" id="btn-measure-area" onclick="setMeasureMode('area')"><span class="icon">⬛</span><span>面积</span></button>
+                        <button class="measure-btn" id="btn-measure-height" onclick="setMeasureMode('height')"><span class="icon">📐</span><span>高度</span></button>
+                        <span class="measure-btn-sep"></span>
+                        <button class="measure-btn measure-btn-danger" onclick="clearMeasure()"><span class="icon">🗑️</span><span>清除</span></button>
+                        <div id="measure-hint"></div>
+                        <div id="measure-result-panel">
+                            <div class="result-title"><span>📊 测量结果</span><span id="result-count">0</span></div>
+                            <div id="result-list"></div>
+                            <button class="result-clear" onclick="clearMeasure()">清除全部</button>
+                        </div>
+                        <span class="measure-btn-sep"></span>
+                        <button class="measure-btn measure-btn-back" onclick="exitMeasurePanel()"><span class="icon">↩</span><span>返回</span></button>
+                    </div>
+                </div>
                 <button @click="closePopup"></button>
             </div>
         </div>
@@ -251,10 +336,31 @@
         <div id="container">
             <div id="openlayersMap" :style="{ width: leftWidth }"></div>
             <div id="buttonContainer">
-                <button id="buttonleft" @click="expandLeft"><<</button>
-                <button id="buttonright" @click="expandRight">>></button>
+                <button id="buttonleft" @click="expandLeft">&lt;&lt;</button>
+                <button id="buttonright" @click="expandRight">&gt;&gt;</button>
             </div>
-            <div id="three" :style="{ width: rightWidth, display: sagaVisible ? 'none' : 'block' }"></div>
+            <div id="three" :style="{ width: rightWidth, display: sagaVisible ? 'none' : 'block' }">
+                <!-- 实时数据浮窗 -->
+                <div id="data-panel">
+                    <div class="dp-header">
+                        <span class="dp-header-title">⚡ 实时数据</span>
+                        <button class="dp-close" onclick="window.closeDataPanel()">✕</button>
+                    </div>
+                    <div class="dp-body">
+                        <div class="dp-row"><span class="dp-label">🎯 FPS</span><span id="dp-fps" class="dp-value">--</span></div>
+                        <div class="dp-row"><span class="dp-label">📐 分辨率</span><span id="dp-resolution" class="dp-value">--</span></div>
+                        <div class="dp-sep"></div>
+                        <div class="dp-row"><span class="dp-label">📍 相机 X</span><span id="dp-camx" class="dp-value">--</span></div>
+                        <div class="dp-row"><span class="dp-label">📍 相机 Y</span><span id="dp-camy" class="dp-value">--</span></div>
+                        <div class="dp-row"><span class="dp-label">📍 相机 Z</span><span id="dp-camz" class="dp-value">--</span></div>
+                        <div class="dp-sep"></div>
+                        <div class="dp-row"><span class="dp-label">🎮 场景对象</span><span id="dp-objects" class="dp-value">--</span></div>
+                        <div class="dp-row"><span class="dp-label">💾 高斯数</span><span id="dp-splats" class="dp-value">--</span></div>
+                        <div class="dp-row"><span class="dp-label">📋 Draw Calls</span><span id="dp-drawcalls" class="dp-value">--</span></div>
+                    </div>
+                    <div class="dp-footer"><span id="dp-time">--</span></div>
+                </div>
+            </div>
             <div id="cesiumMap" :style="{ width: rightWidth }"></div>
         </div>
 
@@ -314,7 +420,7 @@
     <!-- <script type="module" src="/src/main.ts"></script> -->
     <script src="main.vue"></script>
     <script type="module" src="./main.js"></script>
-    <script type="module" src="widgets\three\main.js"></script>
+    <script type="module" src="widgets/three/main.js"></script>
 </body>
 
 </html>
