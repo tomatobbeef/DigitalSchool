@@ -156,7 +156,7 @@
         .measure-btn-danger:hover { background: rgba(255, 80, 80, 0.25); border-color: #ff5050; color: #fff; }
         .measure-btn-close { background: rgba(217, 56, 56, 0.2); border-color: rgba(255, 80, 80, 0.6); color: #ff8080; }
         .measure-btn-close:hover { background: #d93838; border-color: #ff5050; color: #fff; }
-        .measure-btn-back { background: rgba(0, 180, 255, 0.1); border: 1px solid rgba(0, 180, 255, 0.5); color: #40b8ff; margin-top: 6px; }
+        .measure-btn-back { background: rgba(0, 180, 255, 0.1); border: 1px solid rgba(0, 180, 255, 0.5); color: #40b8ff; width: 120px !important; height: 36px !important; padding: 0 !important; margin: 0 !important; }
         .measure-btn-back:hover { background: rgba(0, 180, 255, 0.25); border-color: #40b8ff; color: #fff; box-shadow: 0 0 8px rgba(0, 180, 255, 0.4); }
         #measure-hint { display: none; background: rgba(0, 0, 0, 0.5); color: #00FFE4; padding: 8px 12px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(0, 255, 228, 0.3); text-align: center; }
         #measure-hint.show { display: block; }
@@ -186,24 +186,69 @@
         .dp-footer { padding: 6px 14px; border-top: 1px solid rgba(0, 255, 228, 0.2); font-size: 10px; color: #4a6a7a; text-align: right; }
     /* popup关闭按钮放到底部 */
         .popup-content > button {
+            position: absolute;
             top: auto;
-            bottom: 10px;
-            right: 10px;
+            bottom: 14px;
+            right: 14px;
             z-index: 10;
-            width: 28px; height: 28px;
-            border: 1px solid rgba(255, 80, 80, 0.5);
-            background: rgba(217, 56, 56, 0.2);
-            color: #ff8080;
-            border-radius: 50%;
-            font-size: 14px;
+            width: 34px; height: 34px;
+            border: 1px solid rgba(39, 189, 183, 0.5);
+            background: rgba(11, 21, 44, 0.85);
+            color: #27bdb7;
+            border-radius: 8px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+            box-shadow: 0 0 12px rgba(39, 189, 183, 0.15);
+        }
+        .popup-content > button::before {
+            content: "✕";
+            line-height: 1;
         }
         .popup-content > button:hover {
-            background: #d93838;
+            background: rgba(39, 189, 183, 0.2);
+            border-color: #00FFE4;
+            color: #00FFE4;
+            box-shadow: 0 0 20px rgba(0, 255, 228, 0.4);
+            transform: scale(1.08);
+        }
+
+        /* 侧边面板收起后的重新打开按钮 */
+        .popup-reopen-btn {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 999;
+            width: 26px;
+            padding: 12px 4px;
+            background: rgba(11, 21, 44, 0.9);
+            border: 1px solid rgba(39, 189, 183, 0.6);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            color: #00FFE4;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+            box-shadow: -2px 0 16px rgba(39, 189, 183, 0.2);
+            user-select: none;
+            line-height: 1.4;
+        }
+        .popup-reopen-btn:hover {
+            background: rgba(39, 189, 183, 0.15);
+            border-color: #00FFE4;
             color: #fff;
+            box-shadow: -4px 0 24px rgba(0, 255, 228, 0.4);
+            padding-right: 8px;
         }
     </style>
 
@@ -250,7 +295,7 @@
                 <iframe id="newht" :src="externalUrl" frameborder="0" width="100%" height="100%"
                     style="border-style: solid;background:linear-gradient(to right, rgba(011, 21, 44, 0.4), rgba(11, 21, 44, 0.9));border-style: solid;border-color: #27bdb7;z-index: 2;"></iframe>
                 <!-- 测量面板（覆盖 iframe） -->
-                <div id="measure-panel-overlay" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:3; background:linear-gradient(to right, rgba(11, 21, 44, 0.4), rgba(11, 21, 44, 0.9)); border:1px solid #27bdb7; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; padding:30vh 12px 15vh 12px; box-sizing:border-box;">
+                <div id="measure-panel-overlay" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:3; background:linear-gradient(to right, rgba(11, 21, 44, 0.4), rgba(11, 21, 44, 0.9)); border:1px solid #27bdb7; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; padding:30vh 12px 80px 12px; box-sizing:border-box;">
                     <div id="measure-toolbar">
                         <span class="measure-title">📏 测量工具</span>
                         <button class="measure-btn" id="btn-measure-distance" onclick="setMeasureMode('distance')"><span class="icon">📏</span><span>距离</span></button>
@@ -264,12 +309,18 @@
                             <div id="result-list"></div>
                             <button class="result-clear" onclick="clearMeasure()">清除全部</button>
                         </div>
-                        <span class="measure-btn-sep"></span>
-                        <button class="measure-btn measure-btn-back" onclick="exitMeasurePanel()"><span class="icon">↩</span><span>返回</span></button>
                     </div>
+                    <button class="measure-btn measure-btn-back" onclick="exitMeasurePanel()" style="position:absolute; bottom:16px; left:50%; transform:translateX(-50%); display:flex; align-items:center; justify-content:center; z-index:20;"><span class="icon">↩</span><span>返回</span></button>
                 </div>
-                <button @click="closePopup"></button>
+        <button @click="closePopup"></button>
             </div>
+        </div>
+
+        <!-- 侧边面板收起后的重新打开按钮 -->
+        <div class="popup-reopen-btn" v-if="!isOpen && externalUrl !== 'external.html'" @click="isOpen = true">
+            <span>◀</span>
+            <span>展</span>
+            <span>开</span>
         </div>
 
 
